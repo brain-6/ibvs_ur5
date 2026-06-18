@@ -1,0 +1,247 @@
+[0.011s] Invoking command in '/root/ur_ws/build/ur_description': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake /root/ur_ws/src/Universal_Robots_ROS2_Description -DAMENT_CMAKE_SYMLINK_INSTALL=1 -DCMAKE_INSTALL_PREFIX=/root/ur_ws/install/ur_description
+[0.140s] -- The C compiler identification is GNU 11.4.0
+[0.225s] -- The CXX compiler identification is GNU 11.4.0
+[0.234s] -- Detecting C compiler ABI info
+[0.278s] -- Detecting C compiler ABI info - done
+[0.281s] -- Check for working C compiler: /usr/bin/cc - skipped
+[0.281s] -- Detecting C compile features
+[0.282s] -- Detecting C compile features - done
+[0.284s] -- Detecting CXX compiler ABI info
+[0.332s] -- Detecting CXX compiler ABI info - done
+[0.336s] -- Check for working CXX compiler: /usr/bin/c++ - skipped
+[0.336s] -- Detecting CXX compile features
+[0.336s] -- Detecting CXX compile features - done
+[0.338s] -- Found ament_cmake: 1.3.14 (/opt/ros/humble/share/ament_cmake/cmake)
+[0.421s] -- Found Python3: /usr/bin/python3 (found version "3.10.12") found components: Interpreter 
+[0.462s] -- Override CMake install command with custom implementation using symlinks instead of copying resources
+[0.502s] -- Found ament_cmake_pytest: 1.3.14 (/opt/ros/humble/share/ament_cmake_pytest/cmake)
+[0.876s] -- Configuring done
+[0.878s] -- Generating done
+[0.879s] -- Build files have been written to: /root/ur_ws/build/ur_description
+[0.882s] Invoked command in '/root/ur_ws/build/ur_description' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake /root/ur_ws/src/Universal_Robots_ROS2_Description -DAMENT_CMAKE_SYMLINK_INSTALL=1 -DCMAKE_INSTALL_PREFIX=/root/ur_ws/install/ur_description
+[0.883s] Invoking command in '/root/ur_ws/build/ur_description': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake --build /root/ur_ws/build/ur_description -- -j4 -l4
+[0.905s] Invoked command in '/root/ur_ws/build/ur_description' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake --build /root/ur_ws/build/ur_description -- -j4 -l4
+[0.911s] Invoking command in '/root/ur_ws/build/ur_description': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake --install /root/ur_ws/build/ur_description
+[0.914s] -- Install configuration: ""
+[0.915s] -- Execute custom install script
+[0.917s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/config/initial_positions.yaml
+[0.922s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/config/ur10/default_kinematics.yaml
+[0.927s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/config/ur10/joint_limits.yaml
+[0.932s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/config/ur10/physical_parameters.yaml
+[0.937s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/config/ur10/visual_parameters.yaml
+[0.942s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/config/ur10e/default_kinematics.yaml
+[0.946s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/config/ur10e/joint_limits.yaml
+[0.951s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/config/ur10e/physical_parameters.yaml
+[0.957s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/config/ur10e/visual_parameters.yaml
+[0.961s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/config/ur12e/default_kinematics.yaml
+[0.966s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/config/ur12e/joint_limits.yaml
+[0.971s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/config/ur12e/physical_parameters.yaml
+[0.975s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/config/ur12e/visual_parameters.yaml
+[0.980s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/config/ur15/default_kinematics.yaml
+[0.984s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/config/ur15/joint_limits.yaml
+[0.989s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/config/ur15/physical_parameters.yaml
+[0.994s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/config/ur15/visual_parameters.yaml
+[0.999s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/config/ur16e/default_kinematics.yaml
+[1.004s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/config/ur16e/joint_limits.yaml
+[1.009s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/config/ur16e/physical_parameters.yaml
+[1.014s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/config/ur16e/visual_parameters.yaml
+[1.019s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/config/ur18/default_kinematics.yaml
+[1.023s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/config/ur18/joint_limits.yaml
+[1.028s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/config/ur18/physical_parameters.yaml
+[1.033s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/config/ur18/visual_parameters.yaml
+[1.038s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/config/ur20/default_kinematics.yaml
+[1.041s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/config/ur20/joint_limits.yaml
+[1.047s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/config/ur20/physical_parameters.yaml
+[1.052s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/config/ur20/visual_parameters.yaml
+[1.056s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/config/ur3/default_kinematics.yaml
+[1.060s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/config/ur3/joint_limits.yaml
+[1.064s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/config/ur3/physical_parameters.yaml
+[1.068s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/config/ur3/visual_parameters.yaml
+[1.072s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/config/ur30/default_kinematics.yaml
+[1.076s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/config/ur30/joint_limits.yaml
+[1.081s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/config/ur30/physical_parameters.yaml
+[1.086s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/config/ur30/visual_parameters.yaml
+[1.090s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/config/ur3e/default_kinematics.yaml
+[1.094s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/config/ur3e/joint_limits.yaml
+[1.098s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/config/ur3e/physical_parameters.yaml
+[1.103s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/config/ur3e/visual_parameters.yaml
+[1.107s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/config/ur5/default_kinematics.yaml
+[1.111s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/config/ur5/joint_limits.yaml
+[1.116s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/config/ur5/physical_parameters.yaml
+[1.120s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/config/ur5/visual_parameters.yaml
+[1.124s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/config/ur5e/default_kinematics.yaml
+[1.128s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/config/ur5e/joint_limits.yaml
+[1.133s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/config/ur5e/physical_parameters.yaml
+[1.137s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/config/ur5e/visual_parameters.yaml
+[1.141s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/config/ur7e/default_kinematics.yaml
+[1.145s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/config/ur7e/joint_limits.yaml
+[1.150s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/config/ur7e/physical_parameters.yaml
+[1.154s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/config/ur7e/visual_parameters.yaml
+[1.159s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/config/ur8long/default_kinematics.yaml
+[1.164s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/config/ur8long/joint_limits.yaml
+[1.169s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/config/ur8long/physical_parameters.yaml
+[1.174s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/config/ur8long/visual_parameters.yaml
+[1.178s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/launch/view_ur.launch.py
+[1.183s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/launch/view_ur.launch.xml
+[1.194s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur10/collision/base.stl
+[1.199s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur10/collision/forearm.stl
+[1.203s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur10/collision/shoulder.stl
+[1.208s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur10/collision/upperarm.stl
+[1.211s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur10/collision/wrist1.stl
+[1.216s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur10/collision/wrist2.stl
+[1.220s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur10/collision/wrist3.stl
+[1.225s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur10/visual/base.dae
+[1.229s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur10/visual/forearm.dae
+[1.233s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur10/visual/shoulder.dae
+[1.237s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur10/visual/upperarm.dae
+[1.243s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur10/visual/wrist1.dae
+[1.247s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur10/visual/wrist2.dae
+[1.252s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur10/visual/wrist3.dae
+[1.257s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur10e/collision/base.stl
+[1.261s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur10e/collision/forearm.stl
+[1.267s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur10e/collision/shoulder.stl
+[1.271s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur10e/collision/upperarm.stl
+[1.275s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur10e/collision/wrist1.stl
+[1.279s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur10e/collision/wrist2.stl
+[1.283s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur10e/collision/wrist3.stl
+[1.287s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur10e/visual/base.dae
+[1.292s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur10e/visual/forearm.dae
+[1.298s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur10e/visual/shoulder.dae
+[1.303s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur10e/visual/upperarm.dae
+[1.308s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur10e/visual/wrist1.dae
+[1.313s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur10e/visual/wrist2.dae
+[1.317s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur10e/visual/wrist3.dae
+[1.321s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur15/LICENSE.txt
+[1.326s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur15/collision/base.stl
+[1.330s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur15/collision/forearm.stl
+[1.334s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur15/collision/shoulder.stl
+[1.338s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur15/collision/upperarm.stl
+[1.342s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur15/collision/wrist1.stl
+[1.347s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur15/collision/wrist2.stl
+[1.353s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur15/collision/wrist3.stl
+[1.358s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur15/visual/UR15_DIFF_8bit_2K.jpg
+[1.363s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur15/visual/base.dae
+[1.368s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur15/visual/forearm.dae
+[1.372s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur15/visual/shoulder.dae
+[1.377s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur15/visual/upperarm.dae
+[1.382s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur15/visual/wrist1.dae
+[1.386s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur15/visual/wrist2.dae
+[1.391s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur15/visual/wrist3.dae
+[1.395s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur16e/collision/forearm.stl
+[1.400s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur16e/collision/upperarm.stl
+[1.406s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur16e/visual/forearm.dae
+[1.410s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur16e/visual/upperarm.dae
+[1.414s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur18/LICENSE.txt
+[1.419s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur18/collision/forearm.stl
+[1.424s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur18/collision/upperarm.stl
+[1.430s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur18/visual/UR18_DIFF_8bit_2K.jpg
+[1.435s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur18/visual/forearm.dae
+[1.439s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur18/visual/upperarm.dae
+[1.443s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur20/LICENSE.txt
+[1.449s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur20/collision/base.stl
+[1.454s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur20/collision/forearm.stl
+[1.459s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur20/collision/shoulder.stl
+[1.463s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur20/collision/upperarm.stl
+[1.467s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur20/collision/wrist1.stl
+[1.471s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur20/collision/wrist2.stl
+[1.476s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur20/collision/wrist3.stl
+[1.481s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur20/visual/UR20_DIFF_8bit_2K.png
+[1.485s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur20/visual/base.dae
+[1.490s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur20/visual/forearm.dae
+[1.496s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur20/visual/shoulder.dae
+[1.501s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur20/visual/upperarm.dae
+[1.505s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur20/visual/wrist1.dae
+[1.509s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur20/visual/wrist2.dae
+[1.513s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur20/visual/wrist3.dae
+[1.517s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur3/collision/base.stl
+[1.521s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur3/collision/forearm.stl
+[1.526s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur3/collision/shoulder.stl
+[1.531s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur3/collision/upperarm.stl
+[1.536s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur3/collision/wrist1.stl
+[1.540s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur3/collision/wrist2.stl
+[1.545s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur3/collision/wrist3.stl
+[1.550s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur3/visual/base.dae
+[1.554s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur3/visual/forearm.dae
+[1.559s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur3/visual/shoulder.dae
+[1.563s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur3/visual/upperarm.dae
+[1.569s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur3/visual/wrist1.dae
+[1.574s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur3/visual/wrist2.dae
+[1.578s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur3/visual/wrist3.dae
+[1.583s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur30/LICENSE.txt
+[1.588s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur30/collision/forearm.stl
+[1.593s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur30/collision/upperarm.stl
+[1.597s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur30/visual/UR30_DIFF_8bit_2K.png
+[1.602s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur30/visual/forearm.dae
+[1.607s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur30/visual/upperarm.dae
+[1.612s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur3e/collision/base.stl
+[1.617s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur3e/collision/forearm.stl
+[1.621s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur3e/collision/shoulder.stl
+[1.625s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur3e/collision/upperarm.stl
+[1.629s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur3e/collision/wrist1.stl
+[1.633s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur3e/collision/wrist2.stl
+[1.638s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur3e/collision/wrist3.stl
+[1.642s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur3e/visual/base.dae
+[1.646s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur3e/visual/forearm.dae
+[1.650s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur3e/visual/shoulder.dae
+[1.654s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur3e/visual/upperarm.dae
+[1.659s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur3e/visual/wrist1.dae
+[1.663s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur3e/visual/wrist2.dae
+[1.667s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur3e/visual/wrist3.dae
+[1.672s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur5/collision/base.stl
+[1.676s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur5/collision/forearm.stl
+[1.680s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur5/collision/shoulder.stl
+[1.684s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur5/collision/upperarm.stl
+[1.690s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur5/collision/wrist1.stl
+[1.695s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur5/collision/wrist2.stl
+[1.700s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur5/collision/wrist3.stl
+[1.704s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur5/visual/base.dae
+[1.711s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur5/visual/forearm.dae
+[1.715s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur5/visual/shoulder.dae
+[1.719s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur5/visual/upperarm.dae
+[1.723s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur5/visual/wrist1.dae
+[1.728s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur5/visual/wrist2.dae
+[1.731s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur5/visual/wrist3.dae
+[1.736s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur5e/collision/base.stl
+[1.740s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur5e/collision/forearm.stl
+[1.744s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur5e/collision/shoulder.stl
+[1.748s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur5e/collision/upperarm.stl
+[1.752s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur5e/collision/wrist1.stl
+[1.756s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur5e/collision/wrist2.stl
+[1.761s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur5e/collision/wrist3.stl
+[1.766s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur5e/visual/base.dae
+[1.770s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur5e/visual/forearm.dae
+[1.774s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur5e/visual/shoulder.dae
+[1.779s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur5e/visual/upperarm.dae
+[1.784s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur5e/visual/wrist1.dae
+[1.788s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur5e/visual/wrist2.dae
+[1.793s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur5e/visual/wrist3.dae
+[1.798s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur8long/LICENSE.txt
+[1.802s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur8long/collision/forearm.stl
+[1.806s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur8long/collision/upperarm.stl
+[1.810s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur8long/visual/UR8Long_DIFF_8bit_2K.jpg
+[1.816s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur8long/visual/forearm.dae
+[1.820s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/meshes/ur8long/visual/upperarm.dae
+[1.825s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/rviz/view_robot.rviz
+[1.833s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/urdf/inc/ur_common.xacro
+[1.837s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/urdf/inc/ur_transmissions.xacro
+[1.841s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/urdf/ur.ros2_control.xacro
+[1.845s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/urdf/ur.urdf.xacro
+[1.850s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/urdf/ur_macro.xacro
+[1.855s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/test/test_ur_urdf_xacro.py
+[1.859s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/test/test_view_ur_launch.py
+[1.864s] -- Symlinking: /root/ur_ws/install/ur_description/share/ament_index/resource_index/package_run_dependencies/ur_description
+[1.868s] -- Symlinking: /root/ur_ws/install/ur_description/share/ament_index/resource_index/parent_prefix_path/ur_description
+[1.873s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/environment/ament_prefix_path.sh
+[1.877s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/environment/ament_prefix_path.dsv
+[1.882s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/environment/path.sh
+[1.886s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/environment/path.dsv
+[1.890s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/local_setup.bash
+[1.894s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/local_setup.sh
+[1.899s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/local_setup.zsh
+[1.903s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/local_setup.dsv
+[1.908s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/package.dsv
+[1.915s] -- Symlinking: /root/ur_ws/install/ur_description/share/ament_index/resource_index/packages/ur_description
+[1.918s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/cmake/ur_descriptionConfig.cmake
+[1.922s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/cmake/ur_descriptionConfig-version.cmake
+[1.926s] -- Symlinking: /root/ur_ws/install/ur_description/share/ur_description/package.xml
+[1.933s] Invoked command in '/root/ur_ws/build/ur_description' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake --install /root/ur_ws/build/ur_description

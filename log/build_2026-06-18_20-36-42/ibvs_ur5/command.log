@@ -1,0 +1,6 @@
+Invoking command in '/root/ur_ws/build/ibvs_ur5': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake /root/ur_ws/src/ibvs_ur5 -DAMENT_CMAKE_SYMLINK_INSTALL=1 -DCMAKE_INSTALL_PREFIX=/root/ur_ws/install/ibvs_ur5
+Invoked command in '/root/ur_ws/build/ibvs_ur5' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake /root/ur_ws/src/ibvs_ur5 -DAMENT_CMAKE_SYMLINK_INSTALL=1 -DCMAKE_INSTALL_PREFIX=/root/ur_ws/install/ibvs_ur5
+Invoking command in '/root/ur_ws/build/ibvs_ur5': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake --build /root/ur_ws/build/ibvs_ur5 -- -j4 -l4
+Invoked command in '/root/ur_ws/build/ibvs_ur5' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake --build /root/ur_ws/build/ibvs_ur5 -- -j4 -l4
+Invoking command in '/root/ur_ws/build/ibvs_ur5': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake --install /root/ur_ws/build/ibvs_ur5
+Invoked command in '/root/ur_ws/build/ibvs_ur5' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake --install /root/ur_ws/build/ibvs_ur5

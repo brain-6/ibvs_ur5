@@ -1,0 +1,1 @@
+/root/ur_ws/build/ibvs_ur5/ament_cmake_core/ibvs_ur5Config-version.cmake
