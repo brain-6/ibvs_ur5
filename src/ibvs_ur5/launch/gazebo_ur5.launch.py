@@ -5,14 +5,21 @@ from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch_ros.actions import Node
 from ament_index_python.packages import get_package_share_directory
 
+
 def generate_launch_description():
+    pkg_share = get_package_share_directory('ibvs_ur5')
+
+    # ── 自定义世界文件路径 ──
+    world_file = os.path.join(pkg_share, 'worlds', 'visual_servo.sdf')
+
+    # ── 读取预生成的 URDF ──
     urdf_path = '/tmp/ur5_gazebo.urdf'
     with open(urdf_path, 'r') as f:
         robot_description = f.read()
 
     robot_desc_param = {'robot_description': robot_description}
 
-    # Gazebo via official launch
+    # ── 启动 Gazebo，加载自定义世界 ──
     gz_sim = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             os.path.join(
@@ -20,10 +27,10 @@ def generate_launch_description():
                 'launch', 'gz_sim.launch.py'
             )
         ),
-        launch_arguments={'gz_args': '-r empty.sdf'}.items()
+        launch_arguments={'gz_args': f'-r {world_file}'}.items()
     )
 
-    # Robot State Publisher
+    # ── robot_state_publisher ──
     robot_state_publisher = Node(
         package='robot_state_publisher',
         executable='robot_state_publisher',
@@ -31,7 +38,7 @@ def generate_launch_description():
         output='screen'
     )
 
-    # Spawn UR5
+    # ── 在 Gazebo 中生成 UR5 ──
     spawn_entity = Node(
         package='ros_gz_sim',
         executable='create',
@@ -39,13 +46,24 @@ def generate_launch_description():
         output='screen'
     )
 
-    # Wait for Gazebo's internal controller_manager, then spawn controllers
+    # ── ros_gz_bridge：桥接相机图像 ──
+    bridge = Node(
+        package='ros_gz_bridge',
+        executable='parameter_bridge',
+        arguments=[
+            '/camera/image_raw@sensor_msgs/msg/Image@gz.msgs.Image',
+        ],
+        output='screen'
+    )
+
+    # ── 控制器延迟启动 ──
     joint_state_spawner = TimerAction(
         period=3.0,
         actions=[Node(
             package='controller_manager',
             executable='spawner',
-            arguments=['joint_state_broadcaster', '--controller-manager', '/controller_manager'],
+            arguments=['joint_state_broadcaster',
+                       '--controller-manager', '/controller_manager'],
             output='screen'
         )]
     )
@@ -55,7 +73,8 @@ def generate_launch_description():
         actions=[Node(
             package='controller_manager',
             executable='spawner',
-            arguments=['joint_trajectory_controller', '--controller-manager', '/controller_manager'],
+            arguments=['joint_trajectory_controller',
+                       '--controller-manager', '/controller_manager'],
             output='screen'
         )]
     )
@@ -64,6 +83,7 @@ def generate_launch_description():
         gz_sim,
         robot_state_publisher,
         spawn_entity,
+        bridge,
         joint_state_spawner,
         traj_spawner
     ])
