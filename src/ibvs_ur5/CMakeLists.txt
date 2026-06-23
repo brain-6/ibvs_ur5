@@ -12,7 +12,9 @@ install(DIRECTORY launch config worlds scripts
   DESTINATION share/${PROJECT_NAME}
 )
 
-install(PROGRAMS scripts/joint_state_printer.py
+install(PROGRAMS
+  scripts/joint_state_printer.py
+  scripts/detect_target.py
   DESTINATION lib/${PROJECT_NAME}
 )
 
