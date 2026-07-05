@@ -1,10 +1,14 @@
 <?xml version="1.0"?>
-<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="ur5">
 
-  <!-- 加载UR5基础描述 -->
-  <xacro:include filename="$(find ur_description)/urdf/ur.urdf.xacro" />
+  <xacro:include filename="$(find ur_description)/urdf/ur_macro.xacro" />
+
+  <link name="world"/>
+
   <xacro:ur_robot
-    prefix=""
+    name="ur5"
+    tf_prefix=""
+    parent="world"
     joint_limits_parameters_file="$(find ur_description)/config/ur5/joint_limits.yaml"
     kinematics_parameters_file="$(find ur_description)/config/ur5/default_kinematics.yaml"
     physical_parameters_file="$(find ur_description)/config/ur5/physical_parameters.yaml"
@@ -12,7 +16,44 @@
     safety_limits="false"
     safety_pos_margin="0.15"
     safety_k_position="20"
-  />
+    sim_ignition="true">
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </xacro:ur_robot>
+
+  <!-- ========== 绿色特征球 ========== -->
+  <link name="green_ball_link">
+    <inertial>
+      <mass value="0.01"/>
+      <origin xyz="0 0 0"/>
+      <inertia ixx="0.000001" ixy="0" ixz="0"
+               iyy="0.000001" iyz="0" izz="0.000001"/>
+    </inertial>
+    <visual name="green_ball_visual">
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <sphere radius="0.03"/>
+      </geometry>
+      <material name="bright_green">
+        <color rgba="0 1 0 1"/>
+      </material>
+    </visual>
+  </link>
+
+  <joint name="green_ball_joint" type="fixed">
+    <parent link="tool0"/>
+    <child link="green_ball_link"/>
+    <origin xyz="0 0 0.05" rpy="0 0 0"/>
+  </joint>
+
+  <gazebo reference="green_ball_link">
+    <visual>
+      <material>
+        <ambient>0 1 0 1</ambient>
+        <diffuse>0 1 0 1</diffuse>
+        <specular>0 0 0 1</specular>
+      </material>
+    </visual>
+  </gazebo>
 
   <!-- Gazebo 控制插件 -->
   <gazebo>
