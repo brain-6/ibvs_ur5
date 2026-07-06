@@ -15,6 +15,7 @@ install(DIRECTORY launch config worlds scripts
 install(PROGRAMS
   scripts/joint_state_printer.py
   scripts/detect_target.py
+  scripts/ibvs_controller.py
   DESTINATION lib/${PROJECT_NAME}
 )
 
