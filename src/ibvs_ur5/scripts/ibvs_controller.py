@@ -43,8 +43,10 @@ class IBVSController(Node):
         ]
 
         # 超时熔断
-        self.last_target_time = self.get_clock().now()
-        self.target_timeout_sec = 0.5
+        now = self.get_clock().now()
+        self.last_target_time = now
+        self.last_feature_time = now
+        self.feature_timeout_sec = 0.5
 
         # 控制参数
         self.lambda_gain = 0.2
@@ -71,12 +73,24 @@ class IBVSController(Node):
     def feature_callback(self, msg):
         self.s = np.array([msg.x, msg.y], dtype=np.float64)
         self.has_feature = True
+        self.last_feature_time = self.get_clock().now()
 
     def joint_callback(self, msg):
         q_dict = dict(zip(msg.name, msg.position))
         self.current_q = np.array(
             [q_dict[name] for name in self.joint_names], dtype=np.float64)
         self.has_joints = True
+
+    def features_are_fresh(self):
+        now = self.get_clock().now()
+        target_age = (now - self.last_target_time).nanoseconds / 1e9
+        feature_age = (now - self.last_feature_time).nanoseconds / 1e9
+        return (
+            self.has_target
+            and self.has_feature
+            and target_age <= self.feature_timeout_sec
+            and feature_age <= self.feature_timeout_sec
+        )
 
     #  UR5 几何雅可比 (2x6, 仅末端 XY)
     def compute_jacobian_xy(self, q):
@@ -108,21 +122,13 @@ class IBVSController(Node):
 
         return J
 
-    #  主控制循环 10 Hz
+    #  主控制循环
     def control_loop(self):
         # 1. 超时熔断
-        elapsed = (self.get_clock().now() -
-                   self.last_target_time).nanoseconds / 1e9
-        if elapsed > self.target_timeout_sec:
+        if not self.features_are_fresh():
             self.get_logger().warn(
-                'Target lost! Emergency stop.',
+                'Image feature stale or missing; holding position.',
                 throttle_duration_sec=1.0)
-            return
-
-        if not (self.has_target and self.has_feature):
-            self.get_logger().info(
-                'Waiting for image features...',
-                throttle_duration_sec=2.0)
             return
 
         if not self.has_joints:
