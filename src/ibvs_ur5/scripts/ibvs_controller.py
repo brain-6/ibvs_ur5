@@ -42,17 +42,32 @@ class IBVSController(Node):
             'wrist_1_joint', 'wrist_2_joint', 'wrist_3_joint'
         ]
 
-        # 超时熔断
+        self.lambda_gain = float(
+            self.declare_parameter('lambda_gain', 0.2).value)
+        self.estimated_depth = float(
+            self.declare_parameter('estimated_depth', 2.0).value)
+        self.fx = float(self.declare_parameter('fx', 554.38).value)
+        self.fy = float(self.declare_parameter('fy', 554.38).value)
+        self.max_cartesian_speed = float(
+            self.declare_parameter('max_cartesian_speed', 0.05).value)
+        self.max_joint_speed = float(
+            self.declare_parameter('max_joint_speed', 0.1).value)
+        self.deadzone_px = float(
+            self.declare_parameter('deadzone_px', 15.0).value)
+        self.feature_timeout_sec = float(
+            self.declare_parameter('feature_timeout_sec', 0.5).value)
+        self.control_rate = float(
+            self.declare_parameter('control_rate', 10.0).value)
+        self.trajectory_duration = float(
+            self.declare_parameter('trajectory_duration', 0.11).value)
+
+        if self.control_rate <= 0.0:
+            raise ValueError('control_rate must be positive')
+
+        self.dt = 1.0 / self.control_rate
         now = self.get_clock().now()
         self.last_target_time = now
         self.last_feature_time = now
-        self.feature_timeout_sec = 0.5
-
-        # 控制参数
-        self.lambda_gain = 0.2
-        self.max_vel = 0.05
-        self.max_q_dot = 0.1
-        self.deadzone_px = 15.0
 
         # 关节硬限位 (防 Z 轴失控 / 翻倒)
         self.q_lower = np.array(
@@ -60,7 +75,6 @@ class IBVSController(Node):
         self.q_upper = np.array(
             [ 6.28,  0.5,  6.28,  6.28,  6.28,  6.28], dtype=np.float64)
 
-        self.dt = 0.1
         self.timer = self.create_timer(self.dt, self.control_loop)
         self.get_logger().info('IBVS Controller v2 initialized.')
 
@@ -138,9 +152,9 @@ class IBVSController(Node):
             return
 
         # 2. 图像误差
-        e = self.s - self.s_star               # [e_u, e_v] 单位 px
+        e = self.s - self.s_star
 
-        # 3. 死区检查 —— 在死区内不发指令
+        # 3. 死区检查
         err_norm = np.linalg.norm(e)
         if err_norm < self.deadzone_px:
             self.get_logger().info(
@@ -148,18 +162,20 @@ class IBVSController(Node):
                 throttle_duration_sec=2.0)
             return
 
-        # 4. IBVS 控制律: v_cam = -lambda * L^-1 * e
-        fx = fy = 554.38
-        Z = 2.0
-        L = np.array([[fx / Z, 0.0],
-                      [0.0,     fy / Z]])
+        # 4. IBVS 控制律
+        L = np.array([
+            [self.fx / self.estimated_depth, 0.0],
+            [0.0, self.fy / self.estimated_depth],
+        ])
         v_cam = -self.lambda_gain * np.linalg.solve(L, e)
 
         # 5. 坐标系映射: 相机帧 -> 基座帧
         v_base = np.array([v_cam[1], -v_cam[0]], dtype=np.float64)
 
         # 6. 笛卡尔速度限幅
-        v_base = np.clip(v_base, -self.max_vel, self.max_vel)
+        v_base = np.clip(
+            v_base, -self.max_cartesian_speed,
+            self.max_cartesian_speed)
 
         # 7. 速度级 IK: q_dot = J^+ @ v_base
         J_xy = self.compute_jacobian_xy(self.current_q)
@@ -167,7 +183,8 @@ class IBVSController(Node):
         q_dot = J_pinv @ v_base
 
         # 8. 关节速度限幅 (防振荡)
-        q_dot = np.clip(q_dot, -self.max_q_dot, self.max_q_dot)
+        q_dot = np.clip(
+            q_dot, -self.max_joint_speed, self.max_joint_speed)
 
         # 9. 积分
         q_next = self.current_q + q_dot * self.dt
@@ -179,9 +196,14 @@ class IBVSController(Node):
         traj_msg = JointTrajectory()
         traj_msg.joint_names = self.joint_names
 
+        duration_ns = max(
+            1, int(round(self.trajectory_duration * 1e9)))
+
         point = JointTrajectoryPoint()
         point.positions = q_next.tolist()
-        point.time_from_start = Duration(sec=0, nanosec=110000000)
+        point.time_from_start = Duration(
+            sec=duration_ns // 1_000_000_000,
+            nanosec=duration_ns % 1_000_000_000)
 
         traj_msg.points.append(point)
         self.traj_pub.publish(traj_msg)
