@@ -11,6 +11,7 @@ from sensor_msgs.msg import JointState
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 from builtin_interfaces.msg import Duration
 import numpy as np
+from ibvs_math import feature_position_and_jacobian
 
 
 class IBVSController(Node):
@@ -106,35 +107,6 @@ class IBVSController(Node):
             and feature_age <= self.feature_timeout_sec
         )
 
-    #  UR5 几何雅可比 (2x6, 仅末端 XY)
-    def compute_jacobian_xy(self, q):
-        a2, a3 = -0.42500, -0.39225
-        d4, d5, d6 = 0.10915, 0.09465, 0.0823
-        q1, q2, q3, q4 = q[0], q[1], q[2], q[3]
-
-        s1, c1 = np.sin(q1), np.cos(q1)
-        s2, c2 = np.sin(q2), np.cos(q2)
-        s23, c23 = np.sin(q2 + q3), np.cos(q2 + q3)
-        s234, c234 = np.sin(q2 + q3 + q4), np.cos(q2 + q3 + q4)
-
-        J = np.zeros((2, 6))
-
-        J[0, 0] = -(s1 * (a2*c2 + a3*c23 + d4*s234 + d6*c234) + d5*c1)
-        J[1, 0] =  (c1 * (a2*c2 + a3*c23 + d4*s234 + d6*c234) - d5*s1)
-
-        f2 = -a2*s2 - a3*s23 + d4*c234 - d6*s234
-        J[0, 1] = c1 * f2
-        J[1, 1] = s1 * f2
-
-        f3 = -a3*s23 + d4*c234 - d6*s234
-        J[0, 2] = c1 * f3
-        J[1, 2] = s1 * f3
-
-        f4 = d4*c234 - d6*s234
-        J[0, 3] = c1 * f4
-        J[1, 3] = s1 * f4
-
-        return J
 
     #  主控制循环
     def control_loop(self):
@@ -170,7 +142,8 @@ class IBVSController(Node):
         v_cam = -self.lambda_gain * np.linalg.solve(L, e)
 
         # 5. 坐标系映射: 相机帧 -> 基座帧
-        v_base = np.array([v_cam[1], -v_cam[0]], dtype=np.float64)
+        v_base = np.array(
+            [v_cam[1], -v_cam[0], 0.0], dtype=np.float64)
 
         # 6. 笛卡尔速度限幅
         v_base = np.clip(
@@ -178,9 +151,9 @@ class IBVSController(Node):
             self.max_cartesian_speed)
 
         # 7. 速度级 IK: q_dot = J^+ @ v_base
-        J_xy = self.compute_jacobian_xy(self.current_q)
-        J_pinv = np.linalg.pinv(J_xy, rcond=1e-3)
-        q_dot = J_pinv @ v_base
+        _, jacobian = feature_position_and_jacobian(self.current_q)
+        jacobian_pinv = np.linalg.pinv(jacobian, rcond=1e-3)
+        q_dot = jacobian_pinv @ v_base
 
         # 8. 关节速度限幅 (防振荡)
         q_dot = np.clip(
