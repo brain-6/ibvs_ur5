@@ -11,7 +11,11 @@ from sensor_msgs.msg import JointState
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 from builtin_interfaces.msg import Duration
 import numpy as np
-from ibvs_math import feature_position_and_jacobian
+from ibvs_math import (
+    feature_position_and_jacobian,
+    scale_to_max_abs,
+    scale_to_norm,
+)
 
 
 class IBVSController(Node):
@@ -145,19 +149,18 @@ class IBVSController(Node):
         v_base = np.array(
             [v_cam[1], -v_cam[0], 0.0], dtype=np.float64)
 
-        # 6. 笛卡尔速度限幅
-        v_base = np.clip(
-            v_base, -self.max_cartesian_speed,
-            self.max_cartesian_speed)
+        # 6. 笛卡尔限速
+        v_base = scale_to_norm(
+            v_base, self.max_cartesian_speed)
 
-        # 7. 速度级 IK: q_dot = J^+ @ v_base
+        # 7. 速度级 IK
         _, jacobian = feature_position_and_jacobian(self.current_q)
         jacobian_pinv = np.linalg.pinv(jacobian, rcond=1e-3)
         q_dot = jacobian_pinv @ v_base
 
-        # 8. 关节速度限幅 (防振荡)
-        q_dot = np.clip(
-            q_dot, -self.max_joint_speed, self.max_joint_speed)
+        # 8. 关节限速
+        q_dot = scale_to_max_abs(
+            q_dot, self.max_joint_speed)
 
         # 9. 积分
         q_next = self.current_q + q_dot * self.dt

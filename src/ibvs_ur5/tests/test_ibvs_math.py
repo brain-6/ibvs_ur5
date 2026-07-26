@@ -10,8 +10,11 @@ import numpy as np
 SCRIPTS_DIR = Path(__file__).resolve().parents[1] / 'scripts'
 sys.path.insert(0, str(SCRIPTS_DIR))
 
-from ibvs_math import feature_position_and_jacobian  # noqa: E402
-
+from ibvs_math import (  # noqa: E402
+    feature_position_and_jacobian,
+    scale_to_max_abs,
+    scale_to_norm,
+)
 
 class IBVSMathTest(unittest.TestCase):
     def test_geometric_jacobian_matches_central_difference(self):
@@ -41,6 +44,17 @@ class IBVSMathTest(unittest.TestCase):
         self.assertGreater(position[0], 0.0)
         self.assertGreater(position[1], 0.0)
 
+    def test_limits_preserve_direction(self):
+        vector = np.array([3.0, -4.0, 1.0])
+        norm_limited = scale_to_norm(vector, 0.5)
+        peak_limited = scale_to_max_abs(vector, 0.2)
+
+        self.assertAlmostEqual(np.linalg.norm(norm_limited), 0.5)
+        self.assertAlmostEqual(np.max(np.abs(peak_limited)), 0.2)
+        np.testing.assert_allclose(
+            norm_limited / norm_limited[0], vector / vector[0])
+        np.testing.assert_allclose(
+            peak_limited / peak_limited[0], vector / vector[0])
 
 if __name__ == '__main__':
     unittest.main()

@@ -53,3 +53,26 @@ def feature_position_and_jacobian(q, tool_offset=0.05):
     feature_position = ROS_BASE_FROM_DH_BASE @ feature_position_dh
     jacobian = ROS_BASE_FROM_DH_BASE @ jacobian_dh
     return feature_position, jacobian
+
+def scale_to_norm(vector, max_norm):
+    """Limit a vector norm without changing its direction."""
+    vector = np.asarray(vector, dtype=np.float64)
+    if max_norm <= 0.0:
+        raise ValueError('max_norm must be positive')
+
+    norm = float(np.linalg.norm(vector))
+    if norm <= max_norm or norm == 0.0:
+        return vector.copy()
+    return vector * (max_norm / norm)
+
+
+def scale_to_max_abs(vector, max_abs):
+    """Limit all components by one scale factor, preserving direction."""
+    vector = np.asarray(vector, dtype=np.float64)
+    if max_abs <= 0.0:
+        raise ValueError('max_abs must be positive')
+
+    peak = float(np.max(np.abs(vector)))
+    if peak <= max_abs or peak == 0.0:
+        return vector.copy()
+    return vector * (max_abs / peak)
