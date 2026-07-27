@@ -14,6 +14,7 @@ from ibvs_math import (  # noqa: E402
     feature_position_and_jacobian,
     scale_to_max_abs,
     scale_to_norm,
+    damped_pseudoinverse,
 )
 
 class IBVSMathTest(unittest.TestCase):
@@ -55,6 +56,24 @@ class IBVSMathTest(unittest.TestCase):
             norm_limited / norm_limited[0], vector / vector[0])
         np.testing.assert_allclose(
             peak_limited / peak_limited[0], vector / vector[0])
+
+    def test_damped_pseudoinverse_suppresses_weak_direction(self):
+        jacobian = np.array([
+            [1.0, 0.0],
+            [0.0, 1e-6],
+        ])
+        damping = 0.01
+
+        inverse = damped_pseudoinverse(jacobian, damping)
+        expected = np.array([
+            [1.0 / (1.0 + damping ** 2), 0.0],
+            [0.0, 1e-6 / (1e-12 + damping ** 2)],
+        ])
+        np.testing.assert_allclose(inverse, expected)
+
+        q_dot = inverse @ np.array([1.0, 1.0])
+        self.assertTrue(np.isfinite(q_dot).all())
+        self.assertLess(abs(q_dot[1]), 0.1)
 
 if __name__ == '__main__':
     unittest.main()

@@ -15,6 +15,7 @@ from ibvs_math import (
     feature_position_and_jacobian,
     scale_to_max_abs,
     scale_to_norm,
+    damped_pseudoinverse,
 )
 
 
@@ -57,6 +58,8 @@ class IBVSController(Node):
             self.declare_parameter('max_cartesian_speed', 0.05).value)
         self.max_joint_speed = float(
             self.declare_parameter('max_joint_speed', 0.1).value)
+        self.damping = float(
+            self.declare_parameter('damping', 0.02).value)
         self.deadzone_px = float(
             self.declare_parameter('deadzone_px', 15.0).value)
         self.feature_timeout_sec = float(
@@ -68,6 +71,9 @@ class IBVSController(Node):
 
         if self.control_rate <= 0.0:
             raise ValueError('control_rate must be positive')
+
+        if self.damping < 0.0:
+            raise ValueError('damping must not be negative')
 
         self.dt = 1.0 / self.control_rate
         now = self.get_clock().now()
@@ -155,7 +161,8 @@ class IBVSController(Node):
 
         # 7. 速度级 IK
         _, jacobian = feature_position_and_jacobian(self.current_q)
-        jacobian_pinv = np.linalg.pinv(jacobian, rcond=1e-3)
+        jacobian_pinv = damped_pseudoinverse(
+            jacobian, damping=self.damping)
         q_dot = jacobian_pinv @ v_base
 
         # 8. 关节限速
@@ -185,11 +192,16 @@ class IBVSController(Node):
         self.traj_pub.publish(traj_msg)
 
         # 12. 调试日志
+        singular_values = np.linalg.svd(jacobian, compute_uv=False)
+        achieved_velocity = jacobian @ q_dot
         self.get_logger().info(
             f'err=[{e[0]:7.1f},{e[1]:7.1f}] '
-            f'v=[{v_base[0]:+.4f},{v_base[1]:+.4f}] '
-            f'qd=[{q_dot[0]:+.4f},{q_dot[1]:+.4f},{q_dot[2]:+.4f},{q_dot[3]:+.4f}]'
-        )
+            f'v_cmd=[{v_base[0]:+.4f},'
+            f'{v_base[1]:+.4f},{v_base[2]:+.4f}] '
+            f'v_act=[{achieved_velocity[0]:+.4f},'
+            f'{achieved_velocity[1]:+.4f},{achieved_velocity[2]:+.4f}] '
+            f'qd_max={np.max(np.abs(q_dot)):.3f} '
+            f'sigma_min={singular_values[-1]:.4f}')
 
 
 def main(args=None):

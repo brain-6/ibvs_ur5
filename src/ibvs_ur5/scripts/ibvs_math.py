@@ -55,7 +55,7 @@ def feature_position_and_jacobian(q, tool_offset=0.05):
     return feature_position, jacobian
 
 def scale_to_norm(vector, max_norm):
-    """Limit a vector norm without changing its direction."""
+    #限制向量模，方向不变
     vector = np.asarray(vector, dtype=np.float64)
     if max_norm <= 0.0:
         raise ValueError('max_norm must be positive')
@@ -67,7 +67,7 @@ def scale_to_norm(vector, max_norm):
 
 
 def scale_to_max_abs(vector, max_abs):
-    """Limit all components by one scale factor, preserving direction."""
+    #等比缩放限制分量
     vector = np.asarray(vector, dtype=np.float64)
     if max_abs <= 0.0:
         raise ValueError('max_abs must be positive')
@@ -76,3 +76,29 @@ def scale_to_max_abs(vector, max_abs):
     if peak <= max_abs or peak == 0.0:
         return vector.copy()
     return vector * (max_abs / peak)
+
+def damped_pseudoinverse(jacobian, damping):
+    #返回J^T (J J^T + 阻尼^2 I)^-1
+    jacobian = np.asarray(jacobian, dtype=np.float64)
+    if jacobian.ndim != 2:
+        raise ValueError('jacobian must be a matrix')
+    if damping < 0.0:
+        raise ValueError('damping must not be negative')
+
+    regularized = (
+        jacobian @ jacobian.T
+        + (damping ** 2) * np.eye(jacobian.shape[0], dtype=np.float64)
+    )
+    return jacobian.T @ np.linalg.solve(
+        regularized, np.eye(jacobian.shape[0], dtype=np.float64))
+
+
+def damped_least_squares(jacobian, target_velocity, damping):
+    #求解阻尼速度级逆运动学
+    jacobian = np.asarray(jacobian, dtype=np.float64)
+    target_velocity = np.asarray(target_velocity, dtype=np.float64)
+    if jacobian.ndim != 2:
+        raise ValueError('jacobian must be a matrix')
+    if target_velocity.shape != (jacobian.shape[0],):
+        raise ValueError('target_velocity size must match jacobian rows')
+    return damped_pseudoinverse(jacobian, damping) @ target_velocity
