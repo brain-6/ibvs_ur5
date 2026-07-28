@@ -16,6 +16,7 @@ from ibvs_math import (
     scale_to_max_abs,
     scale_to_norm,
     damped_pseudoinverse,
+    shortest_angular_difference,
 )
 
 
@@ -60,6 +61,13 @@ class IBVSController(Node):
             self.declare_parameter('max_joint_speed', 0.1).value)
         self.damping = float(
             self.declare_parameter('damping', 0.02).value)
+        self.posture_gain = float(
+            self.declare_parameter('posture_gain', 0.25).value)
+        self.preferred_q = np.asarray(
+            self.declare_parameter(
+                'preferred_q',
+                [0.0, -1.2, 1.2, -1.57, -1.57, 0.0]).value,
+            dtype=np.float64)
         self.deadzone_px = float(
             self.declare_parameter('deadzone_px', 15.0).value)
         self.feature_timeout_sec = float(
@@ -74,17 +82,15 @@ class IBVSController(Node):
 
         if self.damping < 0.0:
             raise ValueError('damping must not be negative')
+        if self.posture_gain < 0.0:
+            raise ValueError('posture_gain must not be negative')
+        if self.preferred_q.shape != (6,):
+            raise ValueError('preferred_q must contain six joint angles')
 
         self.dt = 1.0 / self.control_rate
         now = self.get_clock().now()
         self.last_target_time = now
         self.last_feature_time = now
-
-        # 关节硬限位 (防 Z 轴失控 / 翻倒)
-        self.q_lower = np.array(
-            [-6.28, -2.0, -6.28, -6.28, -6.28, -6.28], dtype=np.float64)
-        self.q_upper = np.array(
-            [ 6.28,  0.5,  6.28,  6.28,  6.28,  6.28], dtype=np.float64)
 
         self.timer = self.create_timer(self.dt, self.control_loop)
         self.get_logger().info('IBVS Controller v2 initialized.')
@@ -163,7 +169,14 @@ class IBVSController(Node):
         _, jacobian = feature_position_and_jacobian(self.current_q)
         jacobian_pinv = damped_pseudoinverse(
             jacobian, damping=self.damping)
-        q_dot = jacobian_pinv @ v_base
+        q_dot_task = jacobian_pinv @ v_base
+
+        posture_error = shortest_angular_difference(
+            self.preferred_q, self.current_q)
+        nullspace = np.eye(6) - jacobian_pinv @ jacobian
+        q_dot_posture = nullspace @ (
+            self.posture_gain * posture_error)
+        q_dot = q_dot_task + q_dot_posture
 
         # 8. 关节限速
         q_dot = scale_to_max_abs(
@@ -172,10 +185,7 @@ class IBVSController(Node):
         # 9. 积分
         q_next = self.current_q + q_dot * self.dt
 
-        # 10. 关节硬限位 (防 Z 轴失控)
-        q_next = np.clip(q_next, self.q_lower, self.q_upper)
-
-        # 11. 发送 JTC
+        # 10. 发送 JTC
         traj_msg = JointTrajectory()
         traj_msg.joint_names = self.joint_names
 
@@ -191,7 +201,7 @@ class IBVSController(Node):
         traj_msg.points.append(point)
         self.traj_pub.publish(traj_msg)
 
-        # 12. 调试日志
+        # 11. 调试日志
         singular_values = np.linalg.svd(jacobian, compute_uv=False)
         achieved_velocity = jacobian @ q_dot
         self.get_logger().info(
@@ -201,6 +211,7 @@ class IBVSController(Node):
             f'v_act=[{achieved_velocity[0]:+.4f},'
             f'{achieved_velocity[1]:+.4f},{achieved_velocity[2]:+.4f}] '
             f'qd_max={np.max(np.abs(q_dot)):.3f} '
+            f'qd_null={np.linalg.norm(q_dot_posture):.3f} '
             f'sigma_min={singular_values[-1]:.4f}')
 
 

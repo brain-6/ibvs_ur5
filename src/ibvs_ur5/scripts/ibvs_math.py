@@ -102,3 +102,11 @@ def damped_least_squares(jacobian, target_velocity, damping):
     if target_velocity.shape != (jacobian.shape[0],):
         raise ValueError('target_velocity size must match jacobian rows')
     return damped_pseudoinverse(jacobian, damping) @ target_velocity
+
+def shortest_angular_difference(target, current):
+    #最短角度误差
+    target = np.asarray(target, dtype=np.float64)
+    current = np.asarray(current, dtype=np.float64)
+    if target.shape != current.shape:
+        raise ValueError('target and current must have the same shape')
+    return (target - current + np.pi) % (2.0 * np.pi) - np.pi
