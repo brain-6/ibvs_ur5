@@ -77,6 +77,26 @@ def scale_to_max_abs(vector, max_abs):
         return vector.copy()
     return vector * (max_abs / peak)
 
+def image_error_to_base_velocity(error, gain, depth, fx, fy, max_speed):
+    #固定相机：像素误差映射基座XYZ 速度
+    error = np.asarray(error, dtype=np.float64)
+    if error.shape != (2,):
+        raise ValueError('error must contain [e_u, e_v]')
+    if gain <= 0.0 or depth <= 0.0 or fx <= 0.0 or fy <= 0.0:
+        raise ValueError('gain, depth, fx, and fy must be positive')
+
+    image_plane_velocity = -gain * np.array([
+        depth * error[0] / fx,
+        depth * error[1] / fy,
+    ], dtype=np.float64)
+
+    base_velocity = np.array([
+        -image_plane_velocity[1],
+        -image_plane_velocity[0],
+        0.0,
+    ], dtype=np.float64)
+    return scale_to_norm(base_velocity, max_speed)
+
 def damped_pseudoinverse(jacobian, damping):
     #返回J^T (J J^T + 阻尼^2 I)^-1
     jacobian = np.asarray(jacobian, dtype=np.float64)

@@ -12,13 +12,12 @@ from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 from builtin_interfaces.msg import Duration
 import numpy as np
 from ibvs_math import (
-    feature_position_and_jacobian,
-    scale_to_max_abs,
-    scale_to_norm,
     damped_pseudoinverse,
+    feature_position_and_jacobian,
+    image_error_to_base_velocity,
+    scale_to_max_abs,
     shortest_angular_difference,
 )
-
 
 class IBVSController(Node):
     def __init__(self):
@@ -126,7 +125,7 @@ class IBVSController(Node):
 
     #  主控制循环
     def control_loop(self):
-        # 1. 超时熔断
+        # 超时熔断
         if not self.features_are_fresh():
             self.get_logger().warn(
                 'Image feature stale or missing; holding position.',
@@ -139,10 +138,10 @@ class IBVSController(Node):
                 throttle_duration_sec=2.0)
             return
 
-        # 2. 图像误差
+        # 图像误差
         e = self.s - self.s_star
 
-        # 3. 死区检查
+        # 死区检查
         err_norm = np.linalg.norm(e)
         if err_norm < self.deadzone_px:
             self.get_logger().info(
@@ -150,26 +149,21 @@ class IBVSController(Node):
                 throttle_duration_sec=2.0)
             return
 
-        # 4. IBVS 控制律
-        L = np.array([
-            [self.fx / self.estimated_depth, 0.0],
-            [0.0, self.fy / self.estimated_depth],
-        ])
-        v_cam = -self.lambda_gain * np.linalg.solve(L, e)
+        # IBVS控制律
+        desired_velocity = image_error_to_base_velocity(
+            e,
+            gain=self.lambda_gain,
+            depth=self.estimated_depth,
+            fx=self.fx,
+            fy=self.fy,
+            max_speed=self.max_cartesian_speed)
 
-        # 5. 坐标系映射: 相机帧 -> 基座帧
-        v_base = np.array(
-            [v_cam[1], -v_cam[0], 0.0], dtype=np.float64)
 
-        # 6. 笛卡尔限速
-        v_base = scale_to_norm(
-            v_base, self.max_cartesian_speed)
-
-        # 7. 速度级 IK
+        # 速度级 IK
         _, jacobian = feature_position_and_jacobian(self.current_q)
         jacobian_pinv = damped_pseudoinverse(
             jacobian, damping=self.damping)
-        q_dot_task = jacobian_pinv @ v_base
+        q_dot_task = jacobian_pinv @ desired_velocity
 
         posture_error = shortest_angular_difference(
             self.preferred_q, self.current_q)
@@ -178,14 +172,14 @@ class IBVSController(Node):
             self.posture_gain * posture_error)
         q_dot = q_dot_task + q_dot_posture
 
-        # 8. 关节限速
+        # 关节限速
         q_dot = scale_to_max_abs(
             q_dot, self.max_joint_speed)
 
-        # 9. 积分
+        # 积分
         q_next = self.current_q + q_dot * self.dt
 
-        # 10. 发送 JTC
+        # 发送 JTC
         traj_msg = JointTrajectory()
         traj_msg.joint_names = self.joint_names
 
@@ -201,13 +195,14 @@ class IBVSController(Node):
         traj_msg.points.append(point)
         self.traj_pub.publish(traj_msg)
 
-        # 11. 调试日志
+        # 调试日志
         singular_values = np.linalg.svd(jacobian, compute_uv=False)
         achieved_velocity = jacobian @ q_dot
         self.get_logger().info(
             f'err=[{e[0]:7.1f},{e[1]:7.1f}] '
-            f'v_cmd=[{v_base[0]:+.4f},'
-            f'{v_base[1]:+.4f},{v_base[2]:+.4f}] '
+            f'v_cmd=[{desired_velocity[0]:+.4f},'
+            f'{desired_velocity[1]:+.4f},'
+            f'{desired_velocity[2]:+.4f}] '
             f'v_act=[{achieved_velocity[0]:+.4f},'
             f'{achieved_velocity[1]:+.4f},{achieved_velocity[2]:+.4f}] '
             f'qd_max={np.max(np.abs(q_dot)):.3f} '

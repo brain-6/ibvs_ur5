@@ -16,6 +16,7 @@ from ibvs_math import (  # noqa: E402
     scale_to_norm,
     damped_pseudoinverse,
     shortest_angular_difference,
+    image_error_to_base_velocity,
 )
 
 class IBVSMathTest(unittest.TestCase):
@@ -95,6 +96,24 @@ class IBVSMathTest(unittest.TestCase):
         self.assertGreater(np.linalg.norm(q_dot), 0.05)
         self.assertEqual(current_rank, 1)
         self.assertGreater(next_rank, current_rank)
+
+    def test_camera_mapping_drives_both_pixel_errors_toward_zero(self):
+        error = np.array([-218.0, 49.0])
+        gain = 0.8
+        depth = 2.4
+        fx = fy = 554.38
+
+        velocity = image_error_to_base_velocity(
+            error, gain, depth, fx, fy, max_speed=10.0)
+
+        predicted_pixel_velocity = np.array([
+            -fx * velocity[1] / depth,
+            -fy * velocity[0] / depth,
+        ])
+        np.testing.assert_allclose(
+            predicted_pixel_velocity, -gain * error)
+        self.assertGreater(velocity[0], 0.0)
+        self.assertLess(velocity[1], 0.0)
 
 if __name__ == '__main__':
     unittest.main()
