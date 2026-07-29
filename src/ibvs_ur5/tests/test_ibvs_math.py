@@ -17,6 +17,7 @@ from ibvs_math import (  # noqa: E402
     damped_pseudoinverse,
     shortest_angular_difference,
     image_error_to_base_velocity,
+    combine_prioritized_velocities,
 )
 
 class IBVSMathTest(unittest.TestCase):
@@ -96,6 +97,19 @@ class IBVSMathTest(unittest.TestCase):
         self.assertGreater(np.linalg.norm(q_dot), 0.05)
         self.assertEqual(current_rank, 1)
         self.assertGreater(next_rank, current_rank)
+
+    def test_secondary_velocity_uses_only_remaining_margin(self):
+        primary = np.array([0.04, -0.02, 0.0])
+        secondary = np.array([0.08, -0.04, 0.01])
+
+        combined, secondary_scale = combine_prioritized_velocities(
+            primary, secondary, max_abs=0.05)
+
+        self.assertAlmostEqual(secondary_scale, 0.125)
+        np.testing.assert_allclose(
+            combined,
+            np.array([0.05, -0.025, 0.00125]))
+        self.assertLessEqual(np.max(np.abs(combined)), 0.05)
 
     def test_camera_mapping_drives_both_pixel_errors_toward_zero(self):
         error = np.array([-218.0, 49.0])

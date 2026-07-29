@@ -15,7 +15,7 @@ from ibvs_math import (
     damped_pseudoinverse,
     feature_position_and_jacobian,
     image_error_to_base_velocity,
-    scale_to_max_abs,
+    combine_prioritized_velocities,
     shortest_angular_difference,
 )
 
@@ -191,11 +191,12 @@ class IBVSController(Node):
         nullspace = np.eye(6) - jacobian_pinv @ jacobian
         q_dot_posture = nullspace @ (
             self.posture_gain * posture_error)
-        q_dot = q_dot_task + q_dot_posture
 
-        # 关节限速
-        q_dot = scale_to_max_abs(
-            q_dot, self.max_joint_speed)
+        # 保留视觉任务，余速用于姿态
+        q_dot, posture_scale = combine_prioritized_velocities(
+            q_dot_task,
+            q_dot_posture,
+            self.max_joint_speed)
 
         # 积分
         q_next = self.current_q + q_dot * self.dt
@@ -226,8 +227,10 @@ class IBVSController(Node):
             f'{desired_velocity[2]:+.4f}] '
             f'v_act=[{achieved_velocity[0]:+.4f},'
             f'{achieved_velocity[1]:+.4f},{achieved_velocity[2]:+.4f}] '
+            f'qd_task={np.max(np.abs(q_dot_task)):.3f} '
             f'qd_max={np.max(np.abs(q_dot)):.3f} '
             f'qd_null={np.linalg.norm(q_dot_posture):.3f} '
+            f'posture_scale={posture_scale:.3f} '
             f'sigma_min={singular_values[-1]:.4f}')
 
 

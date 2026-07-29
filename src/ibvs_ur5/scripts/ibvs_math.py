@@ -130,3 +130,33 @@ def shortest_angular_difference(target, current):
     if target.shape != current.shape:
         raise ValueError('target and current must have the same shape')
     return (target - current + np.pi) % (2.0 * np.pi) - np.pi
+
+def combine_prioritized_velocities(primary, secondary, max_abs):
+    #保留主速度，次速度拟合至剩余限制
+    primary = np.asarray(primary, dtype=np.float64)
+    secondary = np.asarray(secondary, dtype=np.float64)
+
+    if primary.ndim != 1 or primary.shape != secondary.shape:
+        raise ValueError('primary and secondary must have the same vector shape')
+    if max_abs <= 0.0:
+        raise ValueError('max_abs must be positive')
+
+    primary_limited = scale_to_max_abs(primary, max_abs)
+    secondary_scale = 1.0
+
+    for primary_value, secondary_value in zip(
+            primary_limited, secondary):
+        if secondary_value > 0.0:
+            bound = (
+                max_abs - primary_value) / secondary_value
+        elif secondary_value < 0.0:
+            bound = (
+                -max_abs - primary_value) / secondary_value
+        else:
+            continue
+
+        secondary_scale = min(secondary_scale, bound)
+
+    secondary_scale = float(np.clip(secondary_scale, 0.0, 1.0))
+    combined = primary_limited + secondary_scale * secondary
+    return combined, secondary_scale
