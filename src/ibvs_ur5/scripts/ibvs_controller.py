@@ -75,6 +75,8 @@ class IBVSController(Node):
             self.declare_parameter('control_rate', 10.0).value)
         self.trajectory_duration = float(
             self.declare_parameter('trajectory_duration', 0.11).value)
+        self.tool_offset = float(
+            self.declare_parameter('tool_offset', 0.05).value)
 
         if self.control_rate <= 0.0:
             raise ValueError('control_rate must be positive')
@@ -92,7 +94,15 @@ class IBVSController(Node):
         self.last_feature_time = now
 
         self.timer = self.create_timer(self.dt, self.control_loop)
-        self.get_logger().info('IBVS Controller v2 initialized.')
+        self.get_logger().info(
+            'IBVS controller initialized: '
+            f'{self.control_rate:.0f} Hz, '
+            f'lambda={self.lambda_gain:.2f}, '
+            f'v_max={self.max_cartesian_speed:.2f} m/s, '
+            f'qd_max={self.max_joint_speed:.2f} rad/s, '
+            f'damping={self.damping:.3f}, '
+            f'posture_gain={self.posture_gain:.2f}, '
+            f'tool_offset={self.tool_offset:.3f} m')
 
     #  回调
     def target_callback(self, msg):
@@ -106,9 +116,19 @@ class IBVSController(Node):
         self.last_feature_time = self.get_clock().now()
 
     def joint_callback(self, msg):
-        q_dict = dict(zip(msg.name, msg.position))
+        q_by_name = dict(zip(msg.name, msg.position))
+        missing = [
+            name for name in self.joint_names if name not in q_by_name
+        ]
+        if missing:
+            self.get_logger().warn(
+                f'JointState is missing: {", ".join(missing)}',
+                throttle_duration_sec=2.0)
+            return
+
         self.current_q = np.array(
-            [q_dict[name] for name in self.joint_names], dtype=np.float64)
+            [q_by_name[name] for name in self.joint_names],
+            dtype=np.float64)
         self.has_joints = True
 
     def features_are_fresh(self):
@@ -160,7 +180,8 @@ class IBVSController(Node):
 
 
         # 速度级 IK
-        _, jacobian = feature_position_and_jacobian(self.current_q)
+        _, jacobian = feature_position_and_jacobian(
+            self.current_q, tool_offset=self.tool_offset)
         jacobian_pinv = damped_pseudoinverse(
             jacobian, damping=self.damping)
         q_dot_task = jacobian_pinv @ desired_velocity
