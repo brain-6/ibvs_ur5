@@ -71,6 +71,10 @@ class IBVSController(Node):
             self.declare_parameter('deadzone_px', 15.0).value)
         self.feature_timeout_sec = float(
             self.declare_parameter('feature_timeout_sec', 0.5).value)
+        self.static_target = bool(
+            self.declare_parameter('static_target', True).value)
+        self.target_timeout_sec = float(
+            self.declare_parameter('target_timeout_sec', 0.5).value)
         self.control_rate = float(
             self.declare_parameter('control_rate', 10.0).value)
         self.trajectory_duration = float(
@@ -80,7 +84,10 @@ class IBVSController(Node):
 
         if self.control_rate <= 0.0:
             raise ValueError('control_rate must be positive')
-
+        if self.target_timeout_sec <= 0.0:
+            raise ValueError('target_timeout_sec must be positive')
+        if self.feature_timeout_sec <= 0.0:
+            raise ValueError('feature_timeout_sec must be positive')
         if self.damping < 0.0:
             raise ValueError('damping must not be negative')
         if self.posture_gain < 0.0:
@@ -106,6 +113,11 @@ class IBVSController(Node):
 
     #  回调
     def target_callback(self, msg):
+        # 静态目标首次检测后锁存，避免遮挡导致目标质心漂移
+        if self.static_target and self.has_target:
+            return
+
+        # 动态目标每次收到消息都更新目标位置
         self.s_star = np.array([msg.x, msg.y], dtype=np.float64)
         self.has_target = True
         self.last_target_time = self.get_clock().now()
@@ -131,24 +143,45 @@ class IBVSController(Node):
             dtype=np.float64)
         self.has_joints = True
 
-    def features_are_fresh(self):
-        now = self.get_clock().now()
-        target_age = (now - self.last_target_time).nanoseconds / 1e9
-        feature_age = (now - self.last_feature_time).nanoseconds / 1e9
-        return (
-            self.has_target
-            and self.has_feature
-            and target_age <= self.feature_timeout_sec
-            and feature_age <= self.feature_timeout_sec
-        )
+    def target_is_ready(self):
+        # 静态目标只要求至少成功检测过一次
+        if not self.has_target:
+            return False
+        if self.static_target:
+            return True
 
+        # 动态目标持续接受新位置
+        now = self.get_clock().now()
+        target_age = (
+            now - self.last_target_time).nanoseconds / 1e9
+        return target_age <= self.target_timeout_sec
+
+    def feature_is_fresh(self):
+        # 绿色特征持续更新，避免使用旧位置盲目运动
+        if not self.has_feature:
+            return False
+
+        now = self.get_clock().now()
+        feature_age = (
+            now - self.last_feature_time).nanoseconds / 1e9
+        return feature_age <= self.feature_timeout_sec
 
     #  主控制循环
     def control_loop(self):
-        # 超时熔断
-        if not self.features_are_fresh():
+        # 静态目标可使用锁存位置，动态目标必须保持新鲜
+        if not self.target_is_ready():
+            message = (
+                'Waiting for initial target; holding position.'
+                if not self.has_target
+                else 'Moving target stale or missing; holding position.')
             self.get_logger().warn(
-                'Image feature stale or missing; holding position.',
+                message, throttle_duration_sec=1.0)
+            return
+
+        # 执行控制时绿色特征必须保持可见
+        if not self.feature_is_fresh():
+            self.get_logger().warn(
+                'Green feature stale or missing; holding position.',
                 throttle_duration_sec=1.0)
             return
 
