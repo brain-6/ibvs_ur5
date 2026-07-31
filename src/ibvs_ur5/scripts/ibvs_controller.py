@@ -49,15 +49,15 @@ class IBVSController(Node):
         ]
 
         self.lambda_gain = float(
-            self.declare_parameter('lambda_gain', 0.2).value)
+            self.declare_parameter('lambda_gain', 0.8).value)
         self.estimated_depth = float(
             self.declare_parameter('estimated_depth', 2.0).value)
         self.fx = float(self.declare_parameter('fx', 554.38).value)
         self.fy = float(self.declare_parameter('fy', 554.38).value)
         self.max_cartesian_speed = float(
-            self.declare_parameter('max_cartesian_speed', 0.05).value)
+            self.declare_parameter('max_cartesian_speed', 0.06).value)
         self.max_joint_speed = float(
-            self.declare_parameter('max_joint_speed', 0.1).value)
+            self.declare_parameter('max_joint_speed', 0.6).value)
         self.damping = float(
             self.declare_parameter('damping', 0.02).value)
         self.posture_gain = float(
@@ -68,7 +68,7 @@ class IBVSController(Node):
                 [0.0, -1.2, 1.2, -1.57, -1.57, 0.0]).value,
             dtype=np.float64)
         self.deadzone_px = float(
-            self.declare_parameter('deadzone_px', 15.0).value)
+            self.declare_parameter('deadzone_px', 5.0).value)
         self.feature_timeout_sec = float(
             self.declare_parameter('feature_timeout_sec', 0.5).value)
         self.static_target = bool(
@@ -276,7 +276,8 @@ def main(args=None):
         pass
     finally:
         node.destroy_node()
-        rclpy.shutdown()
+        if rclpy.ok():
+            rclpy.shutdown()
 
 
 if __name__ == '__main__':
