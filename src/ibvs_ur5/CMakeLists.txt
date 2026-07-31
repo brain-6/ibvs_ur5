@@ -17,6 +17,7 @@ install(PROGRAMS
   scripts/detect_target.py
   scripts/ibvs_math.py
   scripts/ibvs_controller.py
+  scripts/analyze_ibvs_log.py
   DESTINATION lib/${PROJECT_NAME}
 )
 
