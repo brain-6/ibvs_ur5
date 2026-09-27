@@ -49,15 +49,15 @@ class IBVSController(Node):
         ]
 
         self.lambda_gain = float(
-            self.declare_parameter('lambda_gain', 0.8).value)
+            self.declare_parameter('lambda_gain', 9.6).value)
         self.estimated_depth = float(
             self.declare_parameter('estimated_depth', 2.0).value)
         self.fx = float(self.declare_parameter('fx', 554.38).value)
         self.fy = float(self.declare_parameter('fy', 554.38).value)
         self.max_cartesian_speed = float(
-            self.declare_parameter('max_cartesian_speed', 0.06).value)
+            self.declare_parameter('max_cartesian_speed', 0.72).value)
         self.max_joint_speed = float(
-            self.declare_parameter('max_joint_speed', 0.6).value)
+            self.declare_parameter('max_joint_speed', 3.0).value)
         self.damping = float(
             self.declare_parameter('damping', 0.02).value)
         self.posture_gain = float(
@@ -78,7 +78,7 @@ class IBVSController(Node):
         self.control_rate = float(
             self.declare_parameter('control_rate', 10.0).value)
         self.trajectory_duration = float(
-            self.declare_parameter('trajectory_duration', 0.11).value)
+            self.declare_parameter('trajectory_duration', 0.025).value)
         self.tool_offset = float(
             self.declare_parameter('tool_offset', 0.05).value)
 

@@ -8,11 +8,17 @@
 - Phase 3：静态目标闭环 IBVS，已完成 Gazebo 基线验收。
 - Phase 4：噪声、相机参数偏差和控制频率鲁棒性实验，计划中。
 
+当前调速分支使用新的静态仿真默认参数，`phase3-complete` 标签保持原配置。本分支尚不代表 Phase 4 鲁棒性验收完成。
+
+新参数在既定静态目标和初始姿态下三次复验，稳定进入 5 px 死区用时 3.04–3.82 秒，最终误差 2.83–3.61 px，均无特征超时警告；连续保持要求分别为 3、5、5 秒。时间使用外部单调时钟，从首次观测到轨迹命令起算，不含节点启动等待和额外保持时间，与旧日志分析器的计时口径不同。修改默认值后重新构建及 10 项单元测试通过，并完成一次无参数覆盖演示验证。
+
+以上仅是有限参数搜索后的静态仿真结果，不证明动态跟踪、扰动鲁棒性或真实机器人安全。运行环境仍曾出现系统时间跳变，控制器自身计时逻辑未修改；正式 Phase 4 实验前需重新建立基线。
+
 Phase 2 演示：[Bilibili](https://www.bilibili.com/video/BV1DyTJ6bEAt)
 
 ## Phase 3 基线结果
 
-在相同初始姿态下完成 3 次默认参数实验：
+在相同初始姿态下完成 3 次 Phase 3 冻结默认参数实验（并非本调速分支的新默认值）：
 
 | 指标 | 结果 |
 |---|---:|
@@ -29,16 +35,24 @@ Phase 2 演示：[Bilibili](https://www.bilibili.com/video/BV1DyTJ6bEAt)
 ## 默认控制参数
 
 ```text
-lambda_gain=0.8
+lambda_gain=9.6
 estimated_depth=2.0
-max_cartesian_speed=0.06
-max_joint_speed=0.60
+max_cartesian_speed=0.72
+max_joint_speed=3.0
 damping=0.02
 posture_gain=0.25
 deadzone_px=5.0
 control_rate=10.0
-trajectory_duration=0.11
+trajectory_duration=0.025
 static_target=true
+```
+
+上述参数仅针对已测试的 Gazebo 静态目标。需要运行原 Phase 3 参数对照时，对控制器增加以下覆盖项：
+
+```bash
+ros2 run ibvs_ur5 ibvs_controller.py --ros-args \
+  -p lambda_gain:=0.8 -p max_cartesian_speed:=0.06 \
+  -p max_joint_speed:=0.6 -p trajectory_duration:=0.11
 ```
 
 ## 快速运行
@@ -98,4 +112,3 @@ src/ibvs_ur5/
 ## 适用边界
 
 当前结论仅针对 Gazebo 中的静态红色目标。动态目标在持续可见时可以更新；完全遮挡后只能超时保持，尚未实现预测。项目也尚未完成真实机器人所需的关节位置、加速度、碰撞、急停和硬件安全验证。
-
