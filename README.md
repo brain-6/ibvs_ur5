@@ -6,7 +6,7 @@
 
 - Phase 2：红色目标与绿色特征检测，发布图像质心。
 - Phase 3：静态目标闭环 IBVS，已完成 Gazebo 基线验收。
-- Phase 4：噪声、相机参数偏差和控制频率鲁棒性实验，计划中。
+- Phase 4：已完成一轮静态目标提速调参及原速演示；噪声、相机参数偏差和控制频率鲁棒性实验仍在计划中。
 
 当前调速分支使用新的静态仿真默认参数，`phase3-complete` 标签保持原配置。本分支尚不代表 Phase 4 鲁棒性验收完成。
 
@@ -14,7 +14,15 @@
 
 以上仅是有限参数搜索后的静态仿真结果，不证明动态跟踪、扰动鲁棒性或真实机器人安全。运行环境仍曾出现系统时间跳变，控制器自身计时逻辑未修改；正式 Phase 4 实验前需重新建立基线。
 
-Phase 2 演示：[Bilibili](https://www.bilibili.com/video/BV1DyTJ6bEAt)
+## 演示视频
+
+- [Phase 2：红绿目标检测](https://www.bilibili.com/video/BV1DyTJ6bEAt)
+- [Phase 3：静态目标闭环控制演示](https://www.bilibili.com/video/BV1fhhm6LEEY/)
+- [Phase 4：静态目标提速演示（原速）](https://www.bilibili.com/video/BV11zae6xEQg/)
+
+Phase 3 视频中段为 3 倍速；Phase 4 提速视频仅裁去首尾，闭环运动过程连续保留、未加速。视频播放时长不能直接用于比较两阶段的收敛时间，实验计时口径见上文。
+
+Phase 4 视频中 Gazebo 主视角相对流畅，rqt 固定相机俯视图像窗口在实时运行时存在间歇性卡顿，具体原因尚未定位。本视频展示静态目标提速效果，不代表 Phase 4 鲁棒性实验或动态目标跟踪验收完成。
 
 ## Phase 3 基线结果
 
