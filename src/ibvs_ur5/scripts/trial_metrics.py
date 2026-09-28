@@ -9,6 +9,13 @@ def is_formal_trial(end_reason, git_status, anomalies):
             not git_status and not anomalies)
 
 
+def first_command_matches(received_positions, published_positions):
+    """校验确实收到第一条轨迹；禁止把后续命令误当作计时起点。"""
+    return (len(received_positions) == len(published_positions) == 6 and
+            all(math.isfinite(a) and math.isfinite(b) and abs(a - b) <= 1e-12
+                for a, b in zip(received_positions, published_positions)))
+
+
 class TrialJudge:
     def __init__(self, requested_at, threshold=5.0, hold_seconds=3.0,
                  observation_seconds=30.0, freshness_seconds=0.5,

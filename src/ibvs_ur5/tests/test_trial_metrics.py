@@ -4,7 +4,7 @@ import unittest
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'scripts'))
-from trial_metrics import TrialJudge, is_formal_trial
+from trial_metrics import TrialJudge, is_formal_trial, first_command_matches
 
 
 class TrialJudgeTest(unittest.TestCase):
@@ -97,6 +97,12 @@ class TrialJudgeTest(unittest.TestCase):
         self.assertFalse(is_formal_trial('startup_timeout', '', []))
         self.assertFalse(is_formal_trial('converged', ' M controller.py', []))
         self.assertFalse(is_formal_trial('converged', '', ['clock_events']))
+
+    def test_later_command_cannot_be_used_as_first_command(self):
+        first = [0.01, -1.57, 0.0, -1.57, 0.0, 0.0]
+        self.assertTrue(first_command_matches(first, first))
+        self.assertFalse(first_command_matches([0.3] + first[1:], first))
+        self.assertFalse(first_command_matches([], first))
 
 
 if __name__ == '__main__':

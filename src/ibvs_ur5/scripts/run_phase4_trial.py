@@ -20,11 +20,12 @@ from controller_manager_msgs.srv import ListControllers
 from geometry_msgs.msg import Point
 from sensor_msgs.msg import JointState
 from std_msgs.msg import String
+from std_srvs.srv import Trigger
 from trajectory_msgs.msg import JointTrajectory
 from ament_index_python.packages import get_package_share_directory
 import yaml
 
-from trial_metrics import TrialJudge, is_formal_trial
+from trial_metrics import TrialJudge, is_formal_trial, first_command_matches
 
 
 JOINT_NAMES = ['shoulder_pan_joint', 'shoulder_lift_joint', 'elbow_joint',
@@ -43,6 +44,8 @@ class Recorder(Node):
         self.initial_q = None
         self.locked_target = None
         self.initial_error = None
+        self.first_received_positions = None
+        self.first_published_command = None
         self.previous_sequence = None
         self.sequence_gaps = 0
         self.decode_errors = []
@@ -69,6 +72,7 @@ class Recorder(Node):
                                                '/controller_manager/list_controllers')
         self.parameters = self.create_client(GetParameters,
                                               '/ibvs_controller/get_parameters')
+        self.start_service = self.create_client(Trigger, '/ibvs/start_trial')
 
     def raw_point(self, name, msg):
         self.raw[name] = (time.monotonic(), [msg.x, msg.y])
@@ -82,6 +86,7 @@ class Recorder(Node):
     def command(self, msg):
         if msg.points and self.judge.first_command is None:
             self.initial_q = self.q
+            self.first_received_positions = list(msg.points[0].positions)
             self.judge.command(time.monotonic())
 
     def observation(self, msg):
@@ -99,6 +104,8 @@ class Recorder(Node):
                 raise ValueError('inconsistent error vector')
             sequence = int(value['feature_sequence'])
             source_time = float(value['feature_mono'])
+            if value.get('first_command') is not None:
+                self.first_published_command = value['first_command']
             age = now - source_time
             if self.previous_sequence is not None and sequence != self.previous_sequence + 1:
                 self.sequence_gaps += 1
@@ -223,6 +230,7 @@ def run(args):
         if config.get('deadzone_px') != 5.0 or config.get('feature_timeout_sec') != 0.5:
             raise ValueError('Protocol requires deadzone_px=5 and feature_timeout_sec=0.5')
         config['record_observations'] = True
+        config['start_paused'] = True
         result['requested_controller_parameters'] = config
         applied_file = output / 'controller_parameters.yaml'
         applied_file.write_text(yaml.safe_dump({'ibvs_controller': {'ros__parameters': config}}))
@@ -289,6 +297,17 @@ def run(args):
         result['effective_controller_parameters'] = effective
         if effective != config:
             raise RuntimeError('effective_parameter_mismatch')
+        result['startup_stage'] = 'waiting_for_recorder_handshake'
+        wait_for(lambda: recorder.locked_target is not None and recorder.inputs_ready())
+        while True:
+            reply = service_reply(recorder.start_service, Trigger.Request())
+            if reply.success:
+                break
+            next_check = time.monotonic() + 0.2
+            while time.monotonic() < next_check and recorder.judge.end_reason is None:
+                pump()
+            if recorder.judge.end_reason is not None:
+                raise RuntimeError(recorder.judge.end_reason)
         result['startup_stage'] = 'observing'
         while recorder.judge.end_reason is None:
             pump()
@@ -307,7 +326,16 @@ def run(args):
                            'controller_stale_warning_count': recorder.controller_stale_warnings,
                            'observation_sequence_gap_count': recorder.sequence_gaps,
                            'decode_errors': recorder.decode_errors,
-                           'clock_events': recorder.clock_events})
+                           'clock_events': recorder.clock_events,
+                           'first_published_command': recorder.first_published_command,
+                           'first_received_positions': recorder.first_received_positions})
+            first = recorder.first_published_command
+            received = recorder.first_received_positions
+            result['first_command_verified'] = bool(first is not None and received is not None and
+                first_command_matches(received, first['positions']))
+            result['first_command_observer_delay_seconds'] = (
+                recorder.judge.first_command - first['mono']
+                if first is not None and recorder.judge.first_command is not None else None)
         result['cleanup'] = stop_owned_processes(processes)
         if recorder is not None:
             recorder.csv_file.close()
@@ -324,6 +352,11 @@ def run(args):
             anomalies.append('execution_error')
         if result['effective_controller_parameters'] is None:
             anomalies.append('effective_parameters_unverified')
+        if not result.get('first_command_verified'):
+            anomalies.append('first_command_unverified')
+        command_delay = result.get('first_command_observer_delay_seconds')
+        if command_delay is not None and not 0 <= command_delay <= 0.5:
+            anomalies.append('first_command_delivery_delay')
         if any(item['exit_code'] != 0 for item in result['cleanup']):
             anomalies.append('process_cleanup_error')
         result['anomalies'] = anomalies

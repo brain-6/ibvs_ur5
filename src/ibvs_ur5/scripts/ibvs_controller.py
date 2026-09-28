@@ -14,6 +14,7 @@ import numpy as np
 import json
 import time
 from std_msgs.msg import String
+from std_srvs.srv import Trigger
 from ibvs_math import (
     damped_pseudoinverse,
     feature_position_and_jacobian,
@@ -89,6 +90,9 @@ class IBVSController(Node):
             self.declare_parameter('record_observations', False).value)
         self.observation_pub = self.create_publisher(String, '/ibvs/observation', 100)
         self.feature_sequence = 0
+        self.motion_enabled = not bool(self.declare_parameter('start_paused', False).value)
+        self.first_command_observation = None
+        self.start_trial_service = self.create_service(Trigger, '/ibvs/start_trial', self.start_trial)
 
         if self.control_rate <= 0.0:
             raise ValueError('control_rate must be positive')
@@ -120,6 +124,17 @@ class IBVSController(Node):
             f'tool_offset={self.tool_offset:.3f} m')
 
     #  回调
+    def start_trial(self, request, response):
+        # 实验启动握手：等待 JTC 与记录器都匹配到运动话题，再开始原控制循环。
+        ready = (self.record_observations and self.has_target and self.has_feature and
+                 self.has_joints and self.traj_pub.get_subscription_count() >= 2 and
+                 self.observation_pub.get_subscription_count() >= 1)
+        response.success = ready
+        response.message = 'ready' if ready else 'waiting for inputs and recorder subscriptions'
+        if ready:
+            self.motion_enabled = True
+        return response
+
     def target_callback(self, msg):
         # 静态目标首次检测后锁存，避免遮挡导致目标质心漂移
         if self.static_target and self.has_target:
@@ -144,6 +159,7 @@ class IBVSController(Node):
                 'target': self.s_star.tolist(),
                 'feature': self.s.tolist(),
                 'error': (self.s - self.s_star).tolist(),
+                'first_command': self.first_command_observation,
             }, allow_nan=False)
             self.observation_pub.publish(observation)
 
@@ -188,6 +204,8 @@ class IBVSController(Node):
 
     #  主控制循环
     def control_loop(self):
+        if not self.motion_enabled:
+            return
         # 静态目标可使用锁存位置，动态目标必须保持新鲜
         if not self.target_is_ready():
             message = (
@@ -268,6 +286,13 @@ class IBVSController(Node):
             nanosec=duration_ns % 1_000_000_000)
 
         traj_msg.points.append(point)
+        if self.first_command_observation is None:
+            self.first_command_observation = {
+                'mono': time.monotonic(),
+                'positions': list(point.positions),
+                'q_start': self.current_q.tolist(),
+                'error': e.tolist(),
+            }
         self.traj_pub.publish(traj_msg)
 
         # 调试日志
