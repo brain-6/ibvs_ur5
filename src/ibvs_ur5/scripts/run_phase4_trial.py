@@ -24,12 +24,12 @@ from trajectory_msgs.msg import JointTrajectory
 from ament_index_python.packages import get_package_share_directory
 import yaml
 
-from trial_metrics import TrialJudge
+from trial_metrics import TrialJudge, is_formal_trial
 
 
 JOINT_NAMES = ['shoulder_pan_joint', 'shoulder_lift_joint', 'elbow_joint',
                'wrist_1_joint', 'wrist_2_joint', 'wrist_3_joint']
-# Humble uint8 constants may be bytes; received level values are integers.
+# Humble 的 uint8 消息常量可能是 bytes，而接收到的 level 字段是 int。
 WARN_LEVEL = Log.WARN[0] if isinstance(Log.WARN, bytes) else Log.WARN
 
 
@@ -249,16 +249,25 @@ def run(args):
         if conflicts:
             raise RuntimeError('existing_nodes:' + ','.join(sorted(conflicts)))
         recorder.judge = TrialJudge(time.monotonic())
+        result['startup_stage'] = 'waiting_for_controllers'
+        result['controller_status_queries'] = 0
         start('gazebo', ['ros2', 'launch', 'ibvs_ur5', 'gazebo_ur5.launch.py',
-                         f'gui:={str(args.gui).lower()}'])
+                         f'gui:={str(args.gui).lower()}', 'on_exit_shutdown:=true'])
         while True:
+            result['controller_status_queries'] += 1
             reply = service_reply(recorder.controllers, ListControllers.Request())
             states = {item.name: item.state for item in reply.controller}
             if all(states.get(name) == 'active' for name in
                    ('joint_state_broadcaster', 'joint_trajectory_controller')):
                 result['controllers'] = states
                 break
-            pump()
+            # 就绪检查不需要高频请求，避免给 controller_manager 的服务增加负担。
+            next_check = time.monotonic() + 1.0
+            while time.monotonic() < next_check and recorder.judge.end_reason is None:
+                pump()
+            if recorder.judge.end_reason is not None:
+                raise RuntimeError(recorder.judge.end_reason)
+        result['startup_stage'] = 'waiting_for_inputs'
         start('detector', ['ros2', 'run', 'ibvs_ur5', 'detect_target.py', '--ros-args',
                            '-p', 'write_debug_image:=false', '-p', 'log_interval_sec:=1.0'])
         wait_for(recorder.inputs_ready)
@@ -272,6 +281,7 @@ def run(args):
             raise RuntimeError('initial_joint_pose_mismatch')
         start('controller', ['ros2', 'run', 'ibvs_ur5', 'ibvs_controller.py', '--ros-args',
                              '--params-file', str(applied_file)])
+        result['startup_stage'] = 'waiting_for_parameters'
         request = GetParameters.Request(names=list(config))
         reply = service_reply(recorder.parameters, request)
         effective = {name: parameter_value_to_python(value)
@@ -279,6 +289,7 @@ def run(args):
         result['effective_controller_parameters'] = effective
         if effective != config:
             raise RuntimeError('effective_parameter_mismatch')
+        result['startup_stage'] = 'observing'
         while recorder.judge.end_reason is None:
             pump()
     except (Exception, KeyboardInterrupt) as exc:
@@ -317,7 +328,8 @@ def run(args):
             anomalies.append('process_cleanup_error')
         result['anomalies'] = anomalies
         result['success'] = bool(result.get('geometric_converged')) and not anomalies
-        result['formal_candidate'] = result['success'] and not result.get('git_status', 'unknown')
+        result['formal_candidate'] = is_formal_trial(
+            result.get('end_reason'), result.get('git_status', 'unknown'), anomalies)
         (output / 'result.json').write_text(json.dumps(result, ensure_ascii=False, indent=2))
         print(json.dumps({key: result.get(key) for key in
                           ('trial_id', 'end_reason', 'success', 'formal_candidate',

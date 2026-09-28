@@ -3,6 +3,12 @@
 import math
 
 
+def is_formal_trial(end_reason, git_status, anomalies):
+    """干净版本中正常观测到超时也是有效失败样本，不能只收成功结果。"""
+    return (end_reason in ('converged', 'observation_timeout') and
+            not git_status and not anomalies)
+
+
 class TrialJudge:
     def __init__(self, requested_at, threshold=5.0, hold_seconds=3.0,
                  observation_seconds=30.0, freshness_seconds=0.5,

@@ -4,7 +4,7 @@ import unittest
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'scripts'))
-from trial_metrics import TrialJudge
+from trial_metrics import TrialJudge, is_formal_trial
 
 
 class TrialJudgeTest(unittest.TestCase):
@@ -90,6 +90,13 @@ class TrialJudgeTest(unittest.TestCase):
             judge.observe(tick / 10, 4.0)
         self.assertEqual(judge.summary()['convergence_seconds'], 2.0)
         self.assertEqual(judge.interruptions, 1)
+
+    def test_clean_control_timeout_remains_a_formal_failed_trial(self):
+        self.assertTrue(is_formal_trial('observation_timeout', '', []))
+        self.assertTrue(is_formal_trial('converged', '', []))
+        self.assertFalse(is_formal_trial('startup_timeout', '', []))
+        self.assertFalse(is_formal_trial('converged', ' M controller.py', []))
+        self.assertFalse(is_formal_trial('converged', '', ['clock_events']))
 
 
 if __name__ == '__main__':
