@@ -1,0 +1,20 @@
+# 固定静态提速参数；运行器会另开启 record_observations。
+ibvs_controller:
+  ros__parameters:
+    lambda_gain: 9.6
+    estimated_depth: 2.0
+    fx: 554.38
+    fy: 554.38
+    max_cartesian_speed: 0.72
+    max_joint_speed: 3.0
+    damping: 0.02
+    posture_gain: 0.25
+    preferred_q: [0.0, -1.2, 1.2, -1.57, -1.57, 0.0]
+    deadzone_px: 5.0
+    feature_timeout_sec: 0.5
+    static_target: true
+    target_timeout_sec: 0.5
+    control_rate: 10.0
+    trajectory_duration: 0.025
+    tool_offset: 0.05
+    use_sim_time: false

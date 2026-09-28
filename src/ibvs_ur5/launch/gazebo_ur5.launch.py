@@ -1,6 +1,7 @@
 import os
 from launch import LaunchDescription
-from launch.actions import IncludeLaunchDescription, TimerAction
+from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, TimerAction
+from launch.substitutions import LaunchConfiguration, PythonExpression
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch_ros.actions import Node
 from ament_index_python.packages import get_package_share_directory
@@ -27,7 +28,9 @@ def generate_launch_description():
                 'launch', 'gz_sim.launch.py'
             )
         ),
-        launch_arguments={'gz_args': f'-r {world_file}'}.items()
+        launch_arguments={'gz_args': [PythonExpression([
+            "'-r ' if '", LaunchConfiguration('gui'), "' == 'true' else '-s -r '"
+        ]), world_file]}.items()
     )
 
     # ── robot_state_publisher ──
@@ -81,6 +84,7 @@ def generate_launch_description():
     )
 
     return LaunchDescription([
+        DeclareLaunchArgument('gui', default_value='true', choices=['true', 'false']),
         gz_sim,
         robot_state_publisher,
         spawn_entity,

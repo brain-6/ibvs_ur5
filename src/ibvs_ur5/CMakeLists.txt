@@ -18,6 +18,8 @@ install(PROGRAMS
   scripts/ibvs_math.py
   scripts/ibvs_controller.py
   scripts/analyze_ibvs_log.py
+  scripts/trial_metrics.py
+  scripts/run_phase4_trial.py
   DESTINATION lib/${PROJECT_NAME}
 )
 

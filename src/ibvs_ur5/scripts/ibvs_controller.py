@@ -11,6 +11,9 @@ from sensor_msgs.msg import JointState
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 from builtin_interfaces.msg import Duration
 import numpy as np
+import json
+import time
+from std_msgs.msg import String
 from ibvs_math import (
     damped_pseudoinverse,
     feature_position_and_jacobian,
@@ -81,6 +84,11 @@ class IBVSController(Node):
             self.declare_parameter('trajectory_duration', 0.025).value)
         self.tool_offset = float(
             self.declare_parameter('tool_offset', 0.05).value)
+        # 实验观测开关：默认关闭，不改控制律；每次特征更新发布同一份目标/误差。
+        self.record_observations = bool(
+            self.declare_parameter('record_observations', False).value)
+        self.observation_pub = self.create_publisher(String, '/ibvs/observation', 100)
+        self.feature_sequence = 0
 
         if self.control_rate <= 0.0:
             raise ValueError('control_rate must be positive')
@@ -123,9 +131,21 @@ class IBVSController(Node):
         self.last_target_time = self.get_clock().now()
 
     def feature_callback(self, msg):
+        feature_mono = time.monotonic()
         self.s = np.array([msg.x, msg.y], dtype=np.float64)
         self.has_feature = True
         self.last_feature_time = self.get_clock().now()
+        self.feature_sequence += 1
+        if self.record_observations and self.has_target:
+            observation = String()
+            observation.data = json.dumps({
+                'feature_sequence': self.feature_sequence,
+                'feature_mono': feature_mono,
+                'target': self.s_star.tolist(),
+                'feature': self.s.tolist(),
+                'error': (self.s - self.s_star).tolist(),
+            }, allow_nan=False)
+            self.observation_pub.publish(observation)
 
     def joint_callback(self, msg):
         q_by_name = dict(zip(msg.name, msg.position))

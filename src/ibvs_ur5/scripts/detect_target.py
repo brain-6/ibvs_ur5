@@ -18,6 +18,9 @@ class TargetDetector(Node):
     def __init__(self):
         super().__init__('target_detector')
         self.bridge = CvBridge()
+        # 日常调试保留图片；正式批次可关掉逐帧写盘，并限制终端输出。
+        self.write_debug_image = bool(self.declare_parameter('write_debug_image', True).value)
+        self.log_interval_sec = float(self.declare_parameter('log_interval_sec', 1.0).value)
         
         self.subscription = self.create_subscription(
             Image, '/camera/image_raw', self.image_callback, 10)
@@ -64,7 +67,8 @@ class TargetDetector(Node):
                 self.target_pub.publish(point_msg)
                 
                 cv2.circle(bgr, (cx, cy), 10, (0, 255, 0), -1)
-                self.get_logger().info(f'RED:   u={cx}, v={cy}')
+                self.get_logger().info(f'RED:   u={cx}, v={cy}',
+                                       throttle_duration_sec=self.log_interval_sec)
 
         mask_green = cv2.inRange(hsv, self.lower_green, self.upper_green)
         mask_green = cv2.morphologyEx(mask_green, cv2.MORPH_OPEN, self.kernel)
@@ -83,9 +87,11 @@ class TargetDetector(Node):
                 self.feature_pub.publish(point_msg)
                 
                 cv2.circle(bgr, (cx, cy), 10, (0, 0, 255), -1)
-                self.get_logger().info(f'GREEN: u={cx}, v={cy}')
+                self.get_logger().info(f'GREEN: u={cx}, v={cy}',
+                                       throttle_duration_sec=self.log_interval_sec)
 
-        cv2.imwrite('/tmp/detection_output.jpg', bgr)
+        if self.write_debug_image:
+            cv2.imwrite('/tmp/detection_output.jpg', bgr)
 
 def main(args=None):
     rclpy.init(args=args)
@@ -96,7 +102,8 @@ def main(args=None):
         pass
     finally:
         node.destroy_node()
-        rclpy.shutdown()
+        if rclpy.ok():
+            rclpy.shutdown()
 
 if __name__ == '__main__':
     main()

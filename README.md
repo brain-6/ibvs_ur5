@@ -107,6 +107,9 @@ python3 -m unittest discover \
 
 ## 目录结构
 
+Phase 4 的最小记录器、固定成功判据与单轮复现命令见
+[实验记录协议](docs/phase4_protocol.md)。工具具备记录能力不代表三类鲁棒性实验已经完成。
+
 ```text
 src/ibvs_ur5/
 |-- config/       ros2_control 配置
