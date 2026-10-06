@@ -10,9 +10,11 @@ import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import Image
 from geometry_msgs.msg import Point
+from rcl_interfaces.msg import ParameterDescriptor
 from cv_bridge import CvBridge
 import cv2
 import numpy as np
+from image_noise import GaussianImageNoise
 
 class TargetDetector(Node):
     def __init__(self):
@@ -21,6 +23,12 @@ class TargetDetector(Node):
         # 日常调试保留图片；正式批次可关掉逐帧写盘，并限制终端输出。
         self.write_debug_image = bool(self.declare_parameter('write_debug_image', True).value)
         self.log_interval_sec = float(self.declare_parameter('log_interval_sec', 1.0).value)
+        # 实验参数在启动时固定；改变档位/种子应重启节点，避免一轮中途换条件。
+        sigma = self.declare_parameter(
+            'gaussian_sigma', 0.0, ParameterDescriptor(read_only=True)).value
+        seed = self.declare_parameter(
+            'noise_seed', 1001, ParameterDescriptor(read_only=True)).value
+        self.image_noise = GaussianImageNoise(sigma, seed)
         
         self.subscription = self.create_subscription(
             Image, '/camera/image_raw', self.image_callback, 10)
@@ -37,7 +45,9 @@ class TargetDetector(Node):
         self.upper_green = np.array([85, 255, 255])
         
         self.kernel = np.ones((5, 5), np.uint8)
-        self.get_logger().info('Target detector initialized.')
+        self.get_logger().info(
+            f'Target detector initialized: gaussian_sigma={self.image_noise.sigma}, '
+            f'noise_seed={self.image_noise.seed} (BGR intensity units).')
 
     def image_callback(self, msg):
         try:
@@ -46,6 +56,7 @@ class TargetDetector(Node):
             self.get_logger().error(f'cv_bridge failed: {e}')
             return
 
+        bgr = self.image_noise.apply(bgr)
         hsv = cv2.cvtColor(bgr, cv2.COLOR_BGR2HSV)
         
         mask_r1 = cv2.inRange(hsv, self.lower_red1, self.upper_red1)

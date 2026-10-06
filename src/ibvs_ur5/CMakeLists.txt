@@ -15,6 +15,7 @@ install(DIRECTORY launch config worlds scripts
 install(PROGRAMS
   scripts/joint_state_printer.py
   scripts/detect_target.py
+  scripts/image_noise.py
   scripts/ibvs_math.py
   scripts/ibvs_controller.py
   scripts/analyze_ibvs_log.py

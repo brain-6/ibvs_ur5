@@ -72,6 +72,8 @@ class Recorder(Node):
                                                '/controller_manager/list_controllers')
         self.parameters = self.create_client(GetParameters,
                                               '/ibvs_controller/get_parameters')
+        self.detector_parameters = self.create_client(GetParameters,
+                                                       '/target_detector/get_parameters')
         self.start_service = self.create_client(Trigger, '/ibvs/start_trial')
 
     def raw_point(self, name, msg):
@@ -183,7 +185,8 @@ def run(args):
     output.mkdir(parents=True, exist_ok=False)  # 拒绝覆盖任何已有 trial。
     repo = args.repo.resolve()
     result = {'trial_id': output.name, 'factor': args.factor, 'level': args.level,
-              'seed': None, 'protocol': 'static-pixel-hold-v1',
+              'seed': args.noise_seed, 'protocol': 'static-pixel-hold-v1',
+              'requested_detector_parameters': None, 'effective_detector_parameters': None,
               'requested_controller_parameters': None, 'effective_controller_parameters': None,
               'end_reason': 'execution_error', 'geometric_converged': False,
               'gui': args.gui, 'use_sim_time_note': 'Controller clock semantics unchanged.',
@@ -224,6 +227,15 @@ def run(args):
         return future.result()
 
     try:
+        detector_config = {'write_debug_image': False, 'log_interval_sec': 1.0,
+                           'gaussian_sigma': args.gaussian_sigma, 'noise_seed': args.noise_seed}
+        result['requested_detector_parameters'] = detector_config
+        result['detector_parameters'] = detector_config  # 保留旧字段；实际生效值见 effective 字段。
+        result['image_noise'] = {'model': 'independent_bgr_gaussian_v1',
+                                 'injection': 'before_hsv', 'sigma_intensity_units': args.gaussian_sigma,
+                                 'seed': args.noise_seed, 'rounding': 'numpy_rint_after_clip_0_255'}
+        detector_file = output / 'detector_parameters.yaml'
+        detector_file.write_text(yaml.safe_dump({'target_detector': {'ros__parameters': detector_config}}))
         config = yaml.safe_load(args.params.read_text())['ibvs_controller']['ros__parameters']
         if config.get('static_target') is not True:
             raise ValueError('This recorder protocol only supports static_target=true')
@@ -244,7 +256,6 @@ def run(args):
         result['world_sha256'] = hashlib.sha256(world.read_bytes()).hexdigest()
         result['urdf_sha256'] = hashlib.sha256(Path('/tmp/ur5_gazebo.urdf').read_bytes()).hexdigest()
         result['ros_domain_id'] = os.environ.get('ROS_DOMAIN_ID', '0 (default)')
-        result['detector_parameters'] = {'write_debug_image': False, 'log_interval_sec': 1.0}
         rclpy.init()
         ros_initialized = True
         recorder = Recorder(output)
@@ -275,9 +286,17 @@ def run(args):
                 pump()
             if recorder.judge.end_reason is not None:
                 raise RuntimeError(recorder.judge.end_reason)
-        result['startup_stage'] = 'waiting_for_inputs'
+        result['startup_stage'] = 'waiting_for_detector_parameters'
         start('detector', ['ros2', 'run', 'ibvs_ur5', 'detect_target.py', '--ros-args',
-                           '-p', 'write_debug_image:=false', '-p', 'log_interval_sec:=1.0'])
+                           '--params-file', str(detector_file)])
+        request = GetParameters.Request(names=list(detector_config))
+        reply = service_reply(recorder.detector_parameters, request)
+        effective_detector = {name: parameter_value_to_python(value)
+                              for name, value in zip(detector_config, reply.values)}
+        result['effective_detector_parameters'] = effective_detector
+        if effective_detector != detector_config:
+            raise RuntimeError('effective_detector_parameter_mismatch')
+        result['startup_stage'] = 'waiting_for_inputs'
         wait_for(recorder.inputs_ready)
         result['precontrol_q'] = recorder.q
         result['precontrol_red'] = recorder.raw['red'][1]
@@ -352,6 +371,8 @@ def run(args):
             anomalies.append('execution_error')
         if result['effective_controller_parameters'] is None:
             anomalies.append('effective_parameters_unverified')
+        if result['effective_detector_parameters'] is None:
+            anomalies.append('effective_detector_parameters_unverified')
         if not result.get('first_command_verified'):
             anomalies.append('first_command_unverified')
         command_delay = result.get('first_command_observer_delay_seconds')
@@ -377,11 +398,31 @@ def main():
     parser.add_argument('--repo', type=Path, default=Path.cwd())
     parser.add_argument('--params', type=Path, default=Path(
         get_package_share_directory('ibvs_ur5')) / 'config/phase4_static_baseline.yaml')
-    parser.add_argument('--factor', default='baseline')
-    parser.add_argument('--level', default='nominal')
+    parser.add_argument('--factor', default=None)
+    parser.add_argument('--level', default=None)
+    parser.add_argument('--gaussian-sigma', type=float, default=None,
+                        help='图像 BGR 强度噪声标准差；显式指定时自动归类为 image_noise。')
+    parser.add_argument('--noise-seed', type=int, default=1001,
+                        help='检测器每轮启动时固定的非负随机种子。')
     parser.add_argument('--gui', action='store_true', help='默认仅服务端；各正式 trial 保持同一模式。')
     parser.add_argument('--allow-dirty', action='store_true', help='仅开发冒烟，不能记为正式干净版本。')
-    return run(parser.parse_args())
+    args = parser.parse_args()
+    if args.noise_seed < 0:
+        parser.error('--noise-seed must be nonnegative')
+    if args.gaussian_sigma is not None:
+        if not math.isfinite(args.gaussian_sigma) or args.gaussian_sigma < 0:
+            parser.error('--gaussian-sigma must be finite and nonnegative')
+        level = f'sigma={args.gaussian_sigma:g}'
+        if args.factor not in (None, 'image_noise') or args.level not in (None, level):
+            parser.error('noise factor/level must match the actual --gaussian-sigma')
+        args.factor, args.level = 'image_noise', level
+    else:
+        if args.factor == 'image_noise':
+            parser.error('image_noise requires explicit --gaussian-sigma (including 0)')
+        args.gaussian_sigma = 0.0
+        args.factor = args.factor or 'baseline'
+        args.level = args.level or 'nominal'
+    return run(args)
 
 
 if __name__ == '__main__':
