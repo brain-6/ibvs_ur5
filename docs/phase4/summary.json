@@ -1,0 +1,177 @@
+{
+  "source_commit": "18d2e5762ecb97df23933351d7691101bcdd6a1a",
+  "totals": {
+    "actual_attempts": 35,
+    "geometric_converged": 28,
+    "valid": 11,
+    "valid_success": 11,
+    "excluded": 24,
+    "valid_nonconvergence": 0,
+    "startup_failures": 3
+  },
+  "groups": [
+    {
+      "family": "Image noise",
+      "condition": "0",
+      "attempts": 5,
+      "geometric_converged": 5,
+      "valid": 3,
+      "valid_success": 3,
+      "valid_failure": 0,
+      "excluded": 2,
+      "mean_convergence_seconds_valid_success": 3.6197942106664414,
+      "startup_failures": 0
+    },
+    {
+      "family": "Image noise",
+      "condition": "5",
+      "attempts": 3,
+      "geometric_converged": 3,
+      "valid": 1,
+      "valid_success": 1,
+      "valid_failure": 0,
+      "excluded": 2,
+      "mean_convergence_seconds_valid_success": 4.359629904999565,
+      "startup_failures": 0
+    },
+    {
+      "family": "Image noise",
+      "condition": "10",
+      "attempts": 3,
+      "geometric_converged": 2,
+      "valid": 1,
+      "valid_success": 1,
+      "valid_failure": 0,
+      "excluded": 2,
+      "mean_convergence_seconds_valid_success": 4.487800562000302,
+      "startup_failures": 1
+    },
+    {
+      "family": "Image noise",
+      "condition": "20",
+      "attempts": 3,
+      "geometric_converged": 3,
+      "valid": 1,
+      "valid_success": 1,
+      "valid_failure": 0,
+      "excluded": 2,
+      "mean_convergence_seconds_valid_success": 7.0172693980002805,
+      "startup_failures": 0
+    },
+    {
+      "family": "Controller intrinsics",
+      "condition": "0.8x",
+      "attempts": 3,
+      "geometric_converged": 3,
+      "valid": 0,
+      "valid_success": 0,
+      "valid_failure": 0,
+      "excluded": 3,
+      "mean_convergence_seconds_valid_success": null,
+      "startup_failures": 0
+    },
+    {
+      "family": "Controller intrinsics",
+      "condition": "0.9x",
+      "attempts": 3,
+      "geometric_converged": 3,
+      "valid": 2,
+      "valid_success": 2,
+      "valid_failure": 0,
+      "excluded": 1,
+      "mean_convergence_seconds_valid_success": 8.60529473599945,
+      "startup_failures": 0
+    },
+    {
+      "family": "Controller intrinsics",
+      "condition": "1.0x",
+      "attempts": 5,
+      "geometric_converged": 5,
+      "valid": 3,
+      "valid_success": 3,
+      "valid_failure": 0,
+      "excluded": 2,
+      "mean_convergence_seconds_valid_success": 3.6197942106664414,
+      "startup_failures": 0
+    },
+    {
+      "family": "Controller intrinsics",
+      "condition": "1.1x",
+      "attempts": 3,
+      "geometric_converged": 3,
+      "valid": 1,
+      "valid_success": 1,
+      "valid_failure": 0,
+      "excluded": 2,
+      "mean_convergence_seconds_valid_success": 3.101959392000026,
+      "startup_failures": 0
+    },
+    {
+      "family": "Controller intrinsics",
+      "condition": "1.2x",
+      "attempts": 3,
+      "geometric_converged": 3,
+      "valid": 1,
+      "valid_success": 1,
+      "valid_failure": 0,
+      "excluded": 2,
+      "mean_convergence_seconds_valid_success": 3.1757932989994515,
+      "startup_failures": 0
+    },
+    {
+      "family": "Rate + trajectory duration",
+      "condition": "20 Hz",
+      "attempts": 3,
+      "geometric_converged": 3,
+      "valid": 1,
+      "valid_success": 1,
+      "valid_failure": 0,
+      "excluded": 2,
+      "mean_convergence_seconds_valid_success": 8.074006511999869,
+      "startup_failures": 0
+    },
+    {
+      "family": "Rate + trajectory duration",
+      "condition": "10 Hz",
+      "attempts": 5,
+      "geometric_converged": 5,
+      "valid": 3,
+      "valid_success": 3,
+      "valid_failure": 0,
+      "excluded": 2,
+      "mean_convergence_seconds_valid_success": 3.6197942106664414,
+      "startup_failures": 0
+    },
+    {
+      "family": "Rate + trajectory duration",
+      "condition": "5 Hz",
+      "attempts": 3,
+      "geometric_converged": 0,
+      "valid": 0,
+      "valid_success": 0,
+      "valid_failure": 0,
+      "excluded": 3,
+      "mean_convergence_seconds_valid_success": null,
+      "startup_failures": 1
+    },
+    {
+      "family": "Rate + trajectory duration",
+      "condition": "2 Hz",
+      "attempts": 3,
+      "geometric_converged": 0,
+      "valid": 0,
+      "valid_success": 0,
+      "valid_failure": 0,
+      "excluded": 3,
+      "mean_convergence_seconds_valid_success": null,
+      "startup_failures": 1
+    }
+  ],
+  "shared_control_ids": [
+    "phase4_noise_formal_sigma0_seed1001_01",
+    "phase4_noise_formal_sigma0_seed1002_01",
+    "phase4_noise_formal_sigma0_seed1003_03"
+  ],
+  "raw_data_note": "Raw result JSON, CSV, configurations and logs retained locally; group nominal controls reuse the same attempts.",
+  "scope": "Phase4 bounded study completed; not a claim of engineering deployment readiness or complete clean three-repeat validation."
+}
