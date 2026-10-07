@@ -1,0 +1,25 @@
+ibvs_controller:
+  ros__parameters:
+    control_rate: 10.0
+    damping: 0.02
+    deadzone_px: 5.0
+    estimated_depth: 2.0
+    feature_timeout_sec: 0.5
+    fx: 443.504
+    fy: 443.504
+    lambda_gain: 9.6
+    max_cartesian_speed: 0.72
+    max_joint_speed: 3.0
+    posture_gain: 0.25
+    preferred_q:
+    - 0.0
+    - -1.2
+    - 1.2
+    - -1.57
+    - -1.57
+    - 0.0
+    static_target: true
+    target_timeout_sec: 0.5
+    tool_offset: 0.05
+    trajectory_duration: 0.025
+    use_sim_time: false

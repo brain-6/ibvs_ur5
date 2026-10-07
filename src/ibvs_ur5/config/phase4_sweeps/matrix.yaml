@@ -1,0 +1,32 @@
+schema_version: 1
+historical_execution_commit: 18d2e5762ecb97df23933351d7691101bcdd6a1a
+repeats: 3
+image_noise:
+  gaussian_sigma:
+  - 0
+  - 5
+  - 10
+  - 20
+  seeds:
+  - 1001
+  - 1002
+  - 1003
+intrinsics:
+  fx_fy_scale:
+  - 0.8
+  - 0.9
+  - 1.0
+  - 1.1
+  - 1.2
+frequency_duration:
+  pairs:
+  - - 20
+    - 0.0125
+  - - 10
+    - 0.025
+  - - 5
+    - 0.05
+  - - 2
+    - 0.125
+baseline_reuse: Same code and unchanged processing/controller conditions; nominal
+  controls shared across groups.
