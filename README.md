@@ -1,75 +1,64 @@
 # UR5 IBVS Visual Servoing
 
-基于 ROS 2 Humble、Gazebo Fortress 和 `ros2_control` 的 UR5 图像视觉伺服项目。摄像机检测红色目标与绿色末端特征，控制器在图像平面减小二者的质心误差，并通过速度级逆运动学生成关节轨迹命令。
+基于 ROS 2 Humble、Gazebo Fortress 和 `ros2_control` 的 UR5 视觉伺服仿真。固定相机检测红色目标和绿色末端特征，机械臂根据图像误差调整运动，使两个质心逐渐靠近。
 
-## 项目状态
-
-- Phase 2：红色目标与绿色特征检测，发布图像质心。
-- Phase 3：静态目标闭环 IBVS，已完成 Gazebo 基线验收。
-- Phase 4：图像噪声、控制器内参偏差、控制频率与匹配轨迹时长的有限实验已运行并汇总；35 次记录中 11 次符合正式比较条件、24 次异常单列。有效重复不足及环境问题留待 Phase 5，详见 [结果与限制](docs/phase4_results.md)。
-
-当前分支使用提速后的静态仿真默认参数，`phase3-complete` 标签保持原配置。本项目定位为学习与展示仿真；完成实验矩阵不等于所有条件验证通过。
-
-历史静态提速阶段，新参数在既定静态目标和初始姿态下三次复验，稳定进入 5 px 死区用时 3.04–3.82 秒，最终误差 2.83–3.61 px，均无特征超时警告；连续保持要求分别为 3、5、5 秒。时间使用外部单调时钟，从首次观测到轨迹命令起算，不含节点启动等待和额外保持时间，与旧日志分析器的计时口径不同。当时修改默认值后重新构建及 10 项单元测试通过，并完成一次无参数覆盖演示验证。
-
-以上是历史提速结果，不与本轮正式对照混合统计。本轮固定代码版本的三个有效零扰动对照，收敛时间均值为 3.620 s。系统时间跳变等异常仍存在，控制器自身计时逻辑未修改；所有异常记录保留并从正式比较中单列，不能据此声称广泛扰动鲁棒性。
-
-## 演示视频
-
-- [Phase 2：红绿目标检测](https://www.bilibili.com/video/BV1DyTJ6bEAt)
-- [Phase 3：静态目标闭环控制演示](https://www.bilibili.com/video/BV1fhhm6LEEY/)
-- [Phase 4：静态目标提速演示（原速）](https://www.bilibili.com/video/BV11zae6xEQg/)
-
-Phase 3 视频中段为 3 倍速；Phase 4 提速视频仅裁去首尾，闭环运动过程连续保留、未加速。视频播放时长不能直接用于比较两阶段的收敛时间，实验计时口径见上文。
-
-Phase 4 视频中 Gazebo 主视角相对流畅，rqt 固定相机俯视图像窗口在实时运行时存在间歇性卡顿，具体原因尚未定位。本视频展示静态目标提速效果，不代表 Phase 4 鲁棒性实验或动态目标跟踪验收完成。
-
-## Phase 3 基线结果
-
-在相同初始姿态下完成 3 次 Phase 3 冻结默认参数实验（并非本调速分支的新默认值）：
-
-| 指标 | 结果 |
-|---|---:|
-| 成功率 | 3 / 3 |
-| 平均收敛时间 | 81.167 s |
-| 收敛时间样本标准差 | 1.005 s |
-| 最终死区误差 | 4.2 px |
-| 图像路径效率 | 0.9951 |
-| 最大横向偏差 | 3.575 px |
-| 输入超时次数 | 0 |
-
-这里的路径效率只描述静态目标下的二维图像误差轨迹，不代表关节空间或三维末端轨迹是全局最短路径。完整方法、参数、复现实验和限制见 [Phase 3 验收报告](docs/phase3_validation.md)。
-
-## 默认控制参数
+项目已完成静态目标闭环控制、参数调优，以及图像噪声、相机内参偏差和控制时间配置的扰动实验。
 
 ```text
-lambda_gain=9.6
-estimated_depth=2.0
-max_cartesian_speed=0.72
-max_joint_speed=3.0
-damping=0.02
-posture_gain=0.25
-deadzone_px=5.0
-control_rate=10.0
-trajectory_duration=0.025
-static_target=true
+相机图像 → HSV 颜色检测 → 质心误差 → 末端速度 → 关节轨迹 → Gazebo
+    ↑                                                        │
+    └────────────────── 图像反馈 ────────────────────────────┘
 ```
 
-上述参数仅针对已测试的 Gazebo 静态目标。需要运行原 Phase 3 参数对照时，对控制器增加以下覆盖项：
+控制器采用阻尼最小二乘逆运动学，并加入零空间姿态调整和关节速度限制。实验工具负责场景启动、参数核对、误差记录与结果判定。
+
+## 演示
+
+- [颜色检测](https://www.bilibili.com/video/BV1DyTJ6bEAt)
+- [静态目标闭环控制](https://www.bilibili.com/video/BV1fhhm6LEEY/)
+- [调参后的静态控制效果](https://www.bilibili.com/video/BV11zae6xEQg/)
+
+第二段视频中段为 3 倍速，第三段保留原速。收敛时间以实验记录为准。
+
+## 实验结果
+
+当前配置在固定初始姿态与静态目标下，三个有效零扰动对照的平均收敛时间为 **3.620 s**。计时从首条已核实的运动命令开始；误差降至 5 px 以下并持续保持至少三秒后，取保持区间的起点作为收敛时刻。
+
+Phase 4 测试了以下条件，每个条件计划重复三次，标称条件共用零扰动对照：
+
+| 实验 | 设置 |
+|---|---|
+| 图像噪声 | 在 HSV 转换前向 BGR 图像加入高斯噪声，σ = 0 / 5 / 10 / 20 |
+| 相机内参偏差 | 控制器的 fx、fy 同比例调整为标称值的 0.8 / 0.9 / 1.0 / 1.1 / 1.2 倍，实际相机保持原配置 |
+| 控制频率与轨迹时长 | 20 / 10 / 5 / 2 Hz，分别配合 0.0125 / 0.025 / 0.05 / 0.125 s 的轨迹时长 |
+
+共保存 35 次试验记录，包含建立对照时的两次重试。其中 28 次达到误差保持条件；按预定协议检查参数、观测和时钟记录后，11 次可用于正式比较，另外 24 次带有异常记录。扰动条件的有效重复仍不足，低频条件的表现有待复测。
+
+数据、图表和逐次结果见 [Phase 4 实验报告](docs/phase4_results.md)。
+
+早期 Phase 3 版本完成了三次静态目标测试，平均收敛时间为 81.167 s，配置保存在 `phase3-complete` 标签中。该阶段使用独立的计时口径，详细指标见 [Phase 3 报告](docs/phase3_validation.md)。
+
+## 运行
+
+以下以已安装 ROS 2 Humble、Gazebo Fortress、colcon 并初始化 rosdep 的 Linux 环境为例，工作空间路径为 `/root/ur_ws`。
+
+首次获取源码时，克隆到尚不存在的目录，并一并下载 UR 机器人模型：
 
 ```bash
-ros2 run ibvs_ur5 ibvs_controller.py --ros-args \
-  -p lambda_gain:=0.8 -p max_cartesian_speed:=0.06 \
-  -p max_joint_speed:=0.6 -p trajectory_duration:=0.11
+git clone --recurse-submodules https://github.com/brain-6/ibvs_ur5.git /root/ur_ws
+cd /root/ur_ws
+source /opt/ros/humble/setup.bash
+rosdep install --from-paths src --ignore-src --rosdistro humble -y
 ```
 
-## 快速运行
+绿色末端特征球由本项目的 `ur5_gazebo.xacro` 添加，生成 URDF 时会与官方 UR5 模型合并。
 
-容器重新创建或 `/tmp` 被清理后，先生成 URDF：
+首次运行或更新源码后构建，并生成仿真所需的 URDF：
 
 ```bash
 cd /root/ur_ws
 source /opt/ros/humble/setup.bash
+colcon build --packages-up-to ibvs_ur5 --symlink-install
 source install/setup.bash
 
 ros2 run xacro xacro \
@@ -77,27 +66,42 @@ ros2 run xacro xacro \
   > /tmp/ur5_gazebo.urdf
 ```
 
-依次在不同终端运行：
+`/tmp` 清理后需重新生成 URDF。打开三个终端，每个终端先加载环境：
 
 ```bash
+cd /root/ur_ws
+source /opt/ros/humble/setup.bash
+source install/setup.bash
+```
+
+再分别启动仿真、检测器和控制器：
+
+```bash
+# 终端 1
 ros2 launch ibvs_ur5 gazebo_ur5.launch.py
-```
 
-```bash
+# 终端 2
 ros2 run ibvs_ur5 detect_target.py
-```
 
-```bash
+# 终端 3
 ros2 run ibvs_ur5 ibvs_controller.py
 ```
 
-分析控制器日志：
+默认控制频率为 10 Hz，增益为 9.6，轨迹时长为 0.025 s。完整参数见 [静态基线配置](src/ibvs_ur5/config/phase4_static_baseline.yaml)。
+
+### 单轮扰动实验
+
+先关闭手动启动的仿真和节点，再运行：
 
 ```bash
-python3 src/ibvs_ur5/scripts/analyze_ibvs_log.py /path/to/controller.log
+ros2 run ibvs_ur5 run_phase4_trial.py \
+  --gaussian-sigma 5 --noise-seed 1001 \
+  --output /tmp/ibvs_noise_s5_s1001
 ```
 
-运行测试：
+运行器会启动并关闭本轮所需进程，保存参数、误差 CSV、结果 JSON 和日志。每轮使用新的输出目录；正式采集要求 Git 工作树干净。其他条件的命令见 [实验复现说明](docs/phase4_reproduction.md)，指标定义见 [记录协议](docs/phase4_protocol.md)。
+
+### 测试
 
 ```bash
 python3 -m unittest discover \
@@ -105,21 +109,15 @@ python3 -m unittest discover \
   -p 'test_*.py'
 ```
 
-## 目录结构
+测试覆盖控制数学、日志分析、图像噪声和实验判据。
 
-Phase 4 的固定成功判据见 [实验记录协议](docs/phase4_protocol.md)，
-三类实验的参数与命令见 [复现入口](docs/phase4_reproduction.md)，数据、图表及 Phase 5 待办见 [结果报告](docs/phase4_results.md)。
+## 已知问题
 
-```text
-src/ibvs_ur5/
-|-- config/       ros2_control 配置
-|-- launch/       Gazebo 与机器人启动文件
-|-- scripts/      检测、控制、数学和日志分析脚本
-|-- tests/        纯数学与日志分析单元测试
-|-- urdf/         UR5 与仿真控制描述
-`-- worlds/       Gazebo 场景
-```
+- 运行环境存在时钟跳变和偶发启动超时，相关试验已保留异常标记。后续先处理运行环境，再补充有效样本。
+- 当前评估集中在固定相机、固定初始姿态和静态目标场景。动态跟踪与真实机器人部署留待后续开展。
 
-## 适用边界
+## 代码入口
 
-当前结论仅针对 Gazebo 中的静态红色目标。动态目标在持续可见时可以更新；完全遮挡后只能超时保持，尚未实现预测。项目也尚未完成真实机器人所需的关节位置、加速度、碰撞、急停和硬件安全验证。
+- [detect_target.py](src/ibvs_ur5/scripts/detect_target.py)：颜色分割与质心提取。
+- [ibvs_controller.py](src/ibvs_ur5/scripts/ibvs_controller.py)：视觉反馈控制、姿态调整与轨迹发布。
+- [run_phase4_trial.py](src/ibvs_ur5/scripts/run_phase4_trial.py)：单轮实验启动、记录与清理。
